@@ -1,0 +1,11 @@
+# Environment files
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+
+# Postgres/Qdrant volume mounts if accidentally mapped into the infrastructure dict
+pgdata/
+qdrant_storage/

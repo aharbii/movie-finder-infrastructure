@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ../backend
+      target: builder # Reverts to the builder layer to retain uv toolchains locally
+    command: >
+      sh -c "uv sync && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ../backend:/app
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+
+  frontend:
+    build:
+      context: ../frontend
+      target: builder
+    command: >
+      sh -c "npm install && npx ng serve --host 0.0.0.0 --poll 2000"
+    volumes:
+      # We meticulously bind only the source matrix securely avoiding MacOS node_modules binary collisions
+      - ../frontend/src:/app/src
+      - ../frontend/angular.json:/app/angular.json
+      - ../frontend/tsconfig.json:/app/tsconfig.json
+      - ../frontend/package.json:/app/package.json
+      - ../frontend/tailwind.config.js:/app/tailwind.config.js
+
+  structurizr:
+    image: structurizr/lite:latest
+    container_name: movie-finder-structurizr
+    ports:
+      - "8081:8080" # Exposed externally isolated from backend logic 
+    volumes:
+      - ../docs:/usr/local/structurizr
