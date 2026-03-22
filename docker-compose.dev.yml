@@ -15,7 +15,7 @@ services:
       context: ../frontend
       target: builder
     command: >
-      sh -c "npm install && npx ng serve --host 0.0.0.0 --poll 2000"
+      sh -c "npm install && npx ng serve --host 0.0.0.0 --port 80 --poll 2000"
     volumes:
       # We meticulously bind only the source matrix securely avoiding MacOS node_modules binary collisions
       - ../frontend/src:/app/src
