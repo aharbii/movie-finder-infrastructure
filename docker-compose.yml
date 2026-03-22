@@ -11,7 +11,6 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/moviedb
       - QDRANT_URL=http://qdrant:6333
-      - TESTING_LIMIT=${TESTING_LIMIT:-100} # Limits local model test subset
     depends_on:
       postgres:
         condition: service_healthy
