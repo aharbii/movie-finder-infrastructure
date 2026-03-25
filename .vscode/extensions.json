@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    // ── IaC — enable whichever applies once issue #22 is resolved ───────────
+    "hashicorp.terraform",          // Terraform / OpenTofu LSP
+    "ms-azuretools.vscode-bicep",   // Bicep LSP
+
+    // ── Azure ─────────────────────────────────────────────────────────────
+    "ms-azuretools.azure-resources",    // Azure resource browsing and management
+    "ms-azuretools.vscode-docker",
+
+    // ── General ─────────────────────────────────────────────────────────────
+    "redhat.vscode-yaml",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

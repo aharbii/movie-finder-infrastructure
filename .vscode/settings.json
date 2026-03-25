@@ -1,0 +1,33 @@
+{
+  // ── IaC formatting ───────────────────────────────────────────────────────
+  // Uncomment the relevant formatter once IaC tooling is chosen (issue #22).
+
+  // Terraform / OpenTofu:
+  // "[terraform]": {
+  //   "editor.defaultFormatter": "hashicorp.terraform",
+  //   "editor.formatOnSave": true
+  // },
+
+  // Bicep:
+  // "[bicep]": {
+  //   "editor.defaultFormatter": "ms-azuretools.vscode-bicep",
+  //   "editor.formatOnSave": true
+  // },
+
+  // ── Editor ────────────────────────────────────────────────────────────────
+  "editor.rulers": [120],
+  "editor.tabSize": 2,
+
+  // ── YAML (docker-compose, pipeline configs) ───────────────────────────────
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.formatOnSave": true
+  },
+
+  // ── File explorer ─────────────────────────────────────────────────────────
+  "files.exclude": {
+    "**/.terraform": true,
+    "**/*.tfstate": true,
+    "**/*.tfstate.backup": true
+  }
+}
