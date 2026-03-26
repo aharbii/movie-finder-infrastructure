@@ -55,16 +55,21 @@ that only query the vector store must never hold a key that can write to it.
 
 ### Azure Key Vault (runtime — production and staging)
 
-Container Apps read secrets from Azure Key Vault via managed identity. No secret is passed
-through environment variables baked into Docker images or injected through Jenkins build logs.
+`backend/app/` and `backend/chain/` are the only components deployed as Azure Container
+Apps. They read secrets from Azure Key Vault via managed identity. No secret is passed
+through environment variables baked into Docker images or injected through Jenkins build
+logs.
+
+`backend/rag_ingestion/` is an **offline CI pipeline** — it runs as a Jenkins job and is
+never deployed as an Azure Container App. Its secrets (Qdrant RW key, OpenAI key, Kaggle
+credentials) live in the Jenkins credentials store only, not in Azure Key Vault.
 
 | Secret | Azure Key Vault secret name | Tier | Container App(s) |
 |---|---|---|---|
-| Qdrant cluster URL | `qdrant-url` | Both | backend, chain, rag-ingestion |
+| Qdrant cluster URL | `qdrant-url` | RO | backend-app, chain |
 | Qdrant read-only API key | `qdrant-api-key-ro` | RO | backend-app, chain |
-| Qdrant write-capable API key | `qdrant-api-key-rw` | RW | rag-ingestion |
-| Qdrant collection name | `qdrant-collection-name` | Both | backend-app, chain, rag-ingestion |
-| OpenAI API key | `openai-api-key` | — | chain, rag-ingestion |
+| Qdrant collection name | `qdrant-collection-name` | RO | backend-app, chain |
+| OpenAI API key | `openai-api-key` | — | chain |
 | Anthropic API key | `anthropic-api-key` | — | chain |
 | JWT signing key | `app-secret-key` | — | backend-app |
 | PostgreSQL URL | `postgres-url` | — | backend-app |

@@ -81,11 +81,17 @@ Jenkins Multibranch Pipelines push to Azure Container Registry; Azure Container 
 
 ## Jenkins credential IDs
 
-See `docs/devops-setup.md §9` for the full credential table. Common IDs:
-- `qdrant-endpoint`, `qdrant-api-key`
+See `docs/qdrant-secret-model.md` for the full cross-repo secret contract and the
+authoritative mapping of credential IDs to env var names. Key IDs:
+
+- `qdrant-url`, `qdrant-api-key-ro`, `qdrant-api-key-rw`, `qdrant-collection-name`
 - `openai-api-key`, `anthropic-api-key`
 - `kaggle-username`, `kaggle-key`
-- `app-secret-key`
+- `app-secret-key`, `postgres-url`
+
+> `qdrant-api-key-rw` is used exclusively by the `rag_ingestion` CI pipeline.
+> `rag_ingestion` is an offline CI job — it is never deployed as an Azure Container App.
+> Its secrets live in the Jenkins credentials store only, not in Azure Key Vault.
 
 ---
 
