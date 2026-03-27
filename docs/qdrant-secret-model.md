@@ -24,7 +24,7 @@ that only query the vector store must never hold a key that can write to it.
 
 | Tier | Who uses it | Capability |
 |---|---|---|
-| **Read-only (RO)** | `backend/app/`, `backend/chain/`, `backend/imdbapi/` | Query (search, retrieve) only — no upsert, no delete |
+| **Read-only (RO)** | `backend/app/`, `backend/chain/` | Query (search, retrieve) only — no upsert, no delete |
 | **Write-capable (RW)** | `backend/rag_ingestion/` exclusively | Upsert and delete — full collection management |
 
 ### Environment variable names
@@ -32,7 +32,7 @@ that only query the vector store must never hold a key that can write to it.
 | Variable | Tier | Description |
 |---|---|---|
 | `QDRANT_URL` | Both | Qdrant Cloud cluster URL (same endpoint for both tiers) |
-| `QDRANT_API_KEY_RO` | RO only | Read-only API key — injected into app, chain, imdbapi |
+| `QDRANT_API_KEY_RO` | RO only | Read-only API key — injected into app and chain |
 | `QDRANT_API_KEY_RW` | RW only | Write-capable API key — injected into rag_ingestion only |
 | `QDRANT_COLLECTION_NAME` | Both | Target collection name (may vary per environment) |
 
@@ -45,8 +45,7 @@ that only query the vector store must never hold a key that can write to it.
 | Repo | Variable used | Tier |
 |---|---|---|
 | `aharbii/movie-finder-backend` (`app/`) | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO |
-| `aharbii/movie-finder-chain` | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO |
-| `aharbii/imdbapi-client` | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO |
+| `aharbii/movie-finder-chain` | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO (dev/CI only — library consumed by `app/`) |
 | `aharbii/movie-finder-rag` (`rag_ingestion/`) | `QDRANT_URL`, `QDRANT_API_KEY_RW`, `QDRANT_COLLECTION_NAME` | RW |
 
 ---
@@ -55,24 +54,24 @@ that only query the vector store must never hold a key that can write to it.
 
 ### Azure Key Vault (runtime — production and staging)
 
-`backend/app/` and `backend/chain/` are the only components deployed as Azure Container
-Apps. They read secrets from Azure Key Vault via managed identity. No secret is passed
-through environment variables baked into Docker images or injected through Jenkins build
-logs.
+`backend/app/` is the only component deployed as an Azure Container App. `backend/chain/`
+is a library — it runs inside the `backend-app` process and is not deployed separately.
+Secrets are read from Azure Key Vault via managed identity. No secret is passed through
+environment variables baked into Docker images or injected through Jenkins build logs.
 
 `backend/rag_ingestion/` is an **offline CI pipeline** — it runs as a Jenkins job and is
 never deployed as an Azure Container App. Its secrets (Qdrant RW key, OpenAI key, Kaggle
 credentials) live in the Jenkins credentials store only, not in Azure Key Vault.
 
-| Secret | Azure Key Vault secret name | Tier | Container App(s) |
-|---|---|---|---|
-| Qdrant cluster URL | `qdrant-url` | RO | backend-app, chain |
-| Qdrant read-only API key | `qdrant-api-key-ro` | RO | backend-app, chain |
-| Qdrant collection name | `qdrant-collection-name` | RO | backend-app, chain |
-| OpenAI API key | `openai-api-key` | — | chain |
-| Anthropic API key | `anthropic-api-key` | — | chain |
-| JWT signing key | `app-secret-key` | — | backend-app |
-| PostgreSQL URL | `postgres-url` | — | backend-app |
+| Secret | Azure Key Vault secret name | Container App |
+|---|---|---|
+| Qdrant cluster URL | `qdrant-url` | backend-app |
+| Qdrant read-only API key | `qdrant-api-key-ro` | backend-app |
+| Qdrant collection name | `qdrant-collection-name` | backend-app |
+| OpenAI API key | `openai-api-key` | backend-app |
+| Anthropic API key | `anthropic-api-key` | backend-app |
+| JWT signing key | `app-secret-key` | backend-app |
+| PostgreSQL URL | `postgres-url` | backend-app |
 
 > **Manual step required:** All secrets above must be added to Azure Key Vault by the
 > operator. Claude cannot do this. See `CLAUDE.md §Secrets and credentials architecture`
@@ -83,18 +82,21 @@ credentials) live in the Jenkins credentials store only, not in Azure Key Vault.
 Jenkins credential IDs used during CONTRIBUTION and INTEGRATION pipeline runs. These must
 be added manually via the Jenkins UI.
 
-| Jenkins credential ID | Maps to env var | Tier | Used by |
-|---|---|---|---|
-| `qdrant-url` | `QDRANT_URL` | Both | backend, chain, rag pipelines |
-| `qdrant-api-key-ro` | `QDRANT_API_KEY_RO` | RO | backend-app, chain, imdbapi pipelines |
-| `qdrant-api-key-rw` | `QDRANT_API_KEY_RW` | RW | rag-ingestion pipeline |
-| `qdrant-collection-name` | `QDRANT_COLLECTION_NAME` | Both | all |
-| `openai-api-key` | `OPENAI_API_KEY` | — | chain, rag |
-| `anthropic-api-key` | `ANTHROPIC_API_KEY` | — | chain |
-| `app-secret-key` | `APP_SECRET_KEY` | — | backend-app |
-| `postgres-url` | `DATABASE_URL` | — | backend-app |
-| `kaggle-username` | `KAGGLE_USERNAME` | — | rag-ingestion (dataset download) |
-| `kaggle-key` | `KAGGLE_KEY` | — | rag-ingestion (dataset download) |
+| Jenkins credential ID | Maps to env var | Used by |
+|---|---|---|
+| `qdrant-url` | `QDRANT_URL` | backend-app, chain pipelines |
+| `qdrant-api-key-ro` | `QDRANT_API_KEY_RO` | backend-app, chain pipelines |
+| `qdrant-collection-name` | `QDRANT_COLLECTION_NAME` | backend-app, chain pipelines |
+
+> **Secrets not needed in current CI:**
+> - `APP_SECRET_KEY` and `DATABASE_URL` — the app test suite hard-codes a test JWT secret
+>   and connects to a local Postgres sidecar (`postgres:postgres`). Neither production
+>   secret is needed in CI.
+> - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `KAGGLE_API_TOKEN`, `qdrant-api-key-rw` — Jenkins
+>   currently runs tests with stubs only; no real LLM calls or dataset downloads are made.
+>   The RAG ingestion CI job is future work tracked in
+>   [rag#6](https://github.com/aharbii/movie-finder-rag/issues/6). These credentials will
+>   be added to the Jenkins store when that job lands.
 
 > **Note on CI system dependency:** If the project migrates from Jenkins to GitHub Actions
 > (tracked in [infrastructure#4](https://github.com/aharbii/movie-finder-infrastructure/issues/4)),
@@ -110,20 +112,22 @@ be added manually via the Jenkins UI.
 This table is the reference for `.env.example` files across all repos. Every repo must
 declare all variables it consumes, even if the value is injected at runtime.
 
-| Variable | backend/app | backend/chain | backend/imdbapi | backend/rag_ingestion | frontend |
-|---|:---:|:---:|:---:|:---:|:---:|
-| `QDRANT_URL` | ✓ | ✓ | — | ✓ | — |
-| `QDRANT_API_KEY_RO` | ✓ | ✓ | — | — | — |
-| `QDRANT_API_KEY_RW` | — | — | — | ✓ | — |
-| `QDRANT_COLLECTION_NAME` | ✓ | ✓ | — | ✓ | — |
-| `OPENAI_API_KEY` | — | ✓ | — | ✓ | — |
-| `ANTHROPIC_API_KEY` | — | ✓ | — | — | — |
-| `APP_SECRET_KEY` | ✓ | — | — | — | — |
-| `DATABASE_URL` | ✓ | — | — | — | — |
-| `KAGGLE_USERNAME` | — | — | — | ✓ | — |
-| `KAGGLE_KEY` | — | — | — | ✓ | — |
-| `LANGSMITH_API_KEY` | — | ✓ (opt-in) | — | — | — |
-| `LANGSMITH_TRACING` | — | ✓ (opt-in) | — | — | — |
+`backend/chain/` is a library; its env vars are needed for local dev and CI but are
+inherited from the hosting `app/` process at runtime.
+
+| Variable | backend/app | backend/chain | backend/rag_ingestion | frontend |
+|---|:---:|:---:|:---:|:---:|
+| `QDRANT_URL` | ✓ | ✓ (dev/CI) | ✓ | — |
+| `QDRANT_API_KEY_RO` | ✓ | ✓ (dev/CI) | — | — |
+| `QDRANT_API_KEY_RW` | — | — | ✓ | — |
+| `QDRANT_COLLECTION_NAME` | ✓ | ✓ (dev/CI) | ✓ | — |
+| `OPENAI_API_KEY` | — | ✓ (dev/CI) | ✓ | — |
+| `ANTHROPIC_API_KEY` | — | ✓ (dev/CI) | — | — |
+| `APP_SECRET_KEY` | ✓ | — | — | — |
+| `DATABASE_URL` | ✓ | — | — | — |
+| `KAGGLE_API_TOKEN` | — | — | ✓ | — |
+| `LANGSMITH_API_KEY` | — | ✓ (opt-in) | — | — |
+| `LANGSMITH_TRACING` | — | ✓ (opt-in) | — | — |
 
 ---
 
