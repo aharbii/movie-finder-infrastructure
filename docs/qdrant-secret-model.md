@@ -54,14 +54,17 @@ that only query the vector store must never hold a key that can write to it.
 
 ### Azure Key Vault (runtime — production and staging)
 
-`backend/app/` is the only component deployed as an Azure Container App. `backend/chain/`
-is a library — it runs inside the `backend-app` process and is not deployed separately.
+The deployed Azure Container Apps are `backend-app` (FastAPI) and `frontend-app` (nginx).
+`backend/chain/` is a library bundled into `backend-app` and is not a separate Container App.
+`backend/rag_ingestion/` is an **offline CI pipeline** — it runs as a Jenkins job and is
+never deployed as an Azure Container App.
+
+This document covers secrets for `backend-app` only. The `frontend-app` Container App
+serves a pre-built Angular bundle and requires no AI API keys.
+
 Secrets are read from Azure Key Vault via managed identity. No secret is passed through
 environment variables baked into Docker images or injected through Jenkins build logs.
-
-`backend/rag_ingestion/` is an **offline CI pipeline** — it runs as a Jenkins job and is
-never deployed as an Azure Container App. Its secrets (Qdrant RW key, OpenAI key, Kaggle
-credentials) live in the Jenkins credentials store only, not in Azure Key Vault.
+`rag_ingestion` secrets live in the Jenkins credentials store only, not in Azure Key Vault.
 
 | Secret | Azure Key Vault secret name | Container App |
 |---|---|---|
@@ -72,6 +75,8 @@ credentials) live in the Jenkins credentials store only, not in Azure Key Vault.
 | Anthropic API key | `anthropic-api-key` | backend-app |
 | JWT signing key | `app-secret-key` | backend-app |
 | PostgreSQL URL | `postgres-url` | backend-app |
+| LangSmith API key _(opt-in)_ | `langsmith-api-key` | backend-app |
+| LangSmith tracing flag _(opt-in)_ | `langsmith-tracing` | backend-app |
 
 > **Manual step required:** All secrets above must be added to Azure Key Vault by the
 > operator. Claude cannot do this. See `CLAUDE.md §Secrets and credentials architecture`
@@ -112,22 +117,23 @@ be added manually via the Jenkins UI.
 This table is the reference for `.env.example` files across all repos. Every repo must
 declare all variables it consumes, even if the value is injected at runtime.
 
-`backend/chain/` is a library; its env vars are needed for local dev and CI but are
-inherited from the hosting `app/` process at runtime.
+`backend/chain/` is a library; its env vars are needed for local dev only — its test
+suite fully mocks all external dependencies (Qdrant, OpenAI, Anthropic) and does not
+make real API calls. At runtime, env vars are inherited from the hosting `app/` process.
 
 | Variable | backend/app | backend/chain | backend/rag_ingestion | frontend |
 |---|:---:|:---:|:---:|:---:|
-| `QDRANT_URL` | ✓ | ✓ (dev/CI) | ✓ | — |
-| `QDRANT_API_KEY_RO` | ✓ | ✓ (dev/CI) | — | — |
+| `QDRANT_URL` | ✓ | ✓ (dev) | ✓ | — |
+| `QDRANT_API_KEY_RO` | ✓ | ✓ (dev) | — | — |
 | `QDRANT_API_KEY_RW` | — | — | ✓ | — |
-| `QDRANT_COLLECTION_NAME` | ✓ | ✓ (dev/CI) | ✓ | — |
-| `OPENAI_API_KEY` | — | ✓ (dev/CI) | ✓ | — |
-| `ANTHROPIC_API_KEY` | — | ✓ (dev/CI) | — | — |
+| `QDRANT_COLLECTION_NAME` | ✓ | ✓ (dev) | ✓ | — |
+| `OPENAI_API_KEY` | — | ✓ (dev) | ✓ | — |
+| `ANTHROPIC_API_KEY` | — | ✓ (dev) | — | — |
 | `APP_SECRET_KEY` | ✓ | — | — | — |
 | `DATABASE_URL` | ✓ | — | — | — |
 | `KAGGLE_API_TOKEN` | — | — | ✓ | — |
-| `LANGSMITH_API_KEY` | — | ✓ (opt-in) | — | — |
-| `LANGSMITH_TRACING` | — | ✓ (opt-in) | — | — |
+| `LANGSMITH_API_KEY` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
+| `LANGSMITH_TRACING` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
 
 ---
 
