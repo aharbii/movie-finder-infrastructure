@@ -23,6 +23,13 @@ Status: **Issue #22** — IaC not yet implemented. This repo is a placeholder.
 Secrets are never baked into Docker images or passed through CI logs.
 Production secrets live in Azure Key Vault, injected at runtime via managed identity.
 
+`rag_ingestion` is an offline CI pipeline and is **never deployed as an Azure Container
+App**. Its secrets (`qdrant-api-key-rw`, `openai-api-key`, `kaggle-*`) live in the Jenkins
+credentials store only.
+
+See `docs/qdrant-secret-model.md` for the authoritative credential ID → env var mapping
+and the full cross-repo secret contract.
+
 ---
 
 ## IaC toolchain
