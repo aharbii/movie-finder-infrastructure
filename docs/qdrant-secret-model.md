@@ -76,7 +76,6 @@ environment variables baked into Docker images or injected through Jenkins build
 | JWT signing key | `app-secret-key` | backend-app |
 | PostgreSQL URL | `postgres-url` | backend-app |
 | LangSmith API key _(opt-in)_ | `langsmith-api-key` | backend-app |
-| LangSmith tracing flag _(opt-in)_ | `langsmith-tracing` | backend-app |
 
 > **Manual step required:** All secrets above must be added to Azure Key Vault by the
 > operator. Claude cannot do this. See `CLAUDE.md §Secrets and credentials architecture`
@@ -134,6 +133,8 @@ make real API calls. At runtime, env vars are inherited from the hosting `app/` 
 | `KAGGLE_API_TOKEN` | — | — | ✓ | — |
 | `LANGSMITH_API_KEY` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
 | `LANGSMITH_TRACING` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
+| `LANGSMITH_ENDPOINT` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
+| `LANGSMITH_PROJECT` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
 
 ---
 
