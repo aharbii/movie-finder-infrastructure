@@ -14,7 +14,7 @@ IaC (Terraform/Bicep) for Azure provisioning (ACR, Key Vault, Container Apps).
 - **Azure Key Vault** for runtime secrets (backend-app, chain Container Apps only).
 - **Jenkins credentials store** for CI secrets (all pipelines, including rag_ingestion).
 - `rag_ingestion` is an offline CI pipeline — never deployed to Azure. Its secrets
-  (`qdrant-api-key-rw`, `openai-api-key`, `kaggle-*`) live in Jenkins only.
+  (`qdrant-api-key-rw`, `openai-api-key`, `kaggle-api-token`) live in Jenkins only.
 - See `docs/qdrant-secret-model.md` for the full cross-repo secret contract and
   authoritative credential ID → env var mapping.
 - Update `.env.example` in all affected repos when adding secrets.
