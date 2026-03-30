@@ -138,45 +138,18 @@ Conventional Commits: `chore(infra): add Key Vault secret for Gemini API key`
 
 ## Cross-cutting change checklist
 
-### 1. GitHub issues
-- [ ] `aharbii/movie-finder` (parent)
-- [ ] `aharbii/movie-finder-infrastructure` linked child issue only if this repo changes
-- [ ] Matching issue/PR templates and a recent example were inspected before filing or editing
+Full detail in `ai-context/issue-agent-briefing-template.md`.
 
-### 2. Branch
-- [ ] Branch in this repo + `chore/` in root `movie-finder` to bump pointer
-- [ ] New standalone issues branch from `main` unless stacking is explicitly requested
-
-### 3. ADR
-- [ ] New Azure service, new cloud provider, or new secrets architecture decision?
-  → `docs/architecture/decisions/ADR-NNN-title.md`
-
-### 4. Implementation
-- [ ] IaC files updated (Terraform / Bicep — check what currently exists)
-- [ ] No secrets or credentials in IaC source code
-- [ ] Changes are idempotent (apply twice = same result)
-
-### 5. Secrets and environment — flag ALL of the following to the user
-- [ ] New Azure Key Vault secrets needed → list them explicitly; user adds manually
-- [ ] New Jenkins credential IDs needed → list them; user adds via Jenkins UI
-- [ ] New GitHub Secrets needed → list them; user adds via `gh secret set` or GitHub UI
-- [ ] `.env.example` updated in **every affected repo**: root, `backend/`, `backend/chain/`, `backend/rag_ingestion/`, `frontend/`
-- [ ] `docs/devops-setup.md` credentials table updated
-
-### 6. CI — Jenkins
-- [ ] `.github/workflows/*.yml` and/or Jenkinsfile reviewed for new credentials, permissions, or deploy steps
-- [ ] Jenkins pipeline mode (INTEGRATION / RELEASE) still valid for new resources?
-
-### 7. Architecture diagrams (in `docs/` submodule)
-- [ ] **PlantUML** — `10-deployment-azure.puml` updated for any new Azure resources
-  **Never generate `.mdj`** — user syncs to StarUML manually
-- [ ] **Structurizr C4** — `workspace.dsl` deployment view updated
-- [ ] Commit to `aharbii/movie-finder-docs` first
-
-### 8. Documentation
-- [ ] `docs/devops-setup.md` updated (new resources, access patterns, credentials)
-- [ ] `CHANGELOG.md` under `[Unreleased]`
-- [ ] Contributor docs updated when CI, required checks, or merge policy change
+| # | Category | Key gate |
+|---|---|---|
+| 1 | **Issues** | Parent `aharbii/movie-finder` + child here only if this repo changes; templates inspected |
+| 2 | **Branch** | `feature/fix/chore` in this repo + pointer-bump `chore/` in root `movie-finder` |
+| 3 | **ADR** | New Azure service, cloud provider, or secrets architecture decision → ADR in `docs/` |
+| 4 | **IaC** | No secrets in source; changes are idempotent; Terraform/Bicep validate passes |
+| 5 | **Secrets** | List ALL new Key Vault secrets, Jenkins credentials, GitHub Secrets explicitly — user adds manually; `.env.example` updated in every affected repo; `docs/devops-setup.md` updated |
+| 6 | **CI** | `Jenkinsfile` reviewed; INTEGRATION/RELEASE pipeline mode still valid |
+| 7 | **Diagrams** | `10-deployment-azure.puml` updated; `workspace.dsl` deployment view updated; commit to `docs/` first; **never `.mdj`** |
+| 8 | **Docs** | `docs/devops-setup.md` updated; `CHANGELOG.md` updated |
 
 ### 9. Sibling submodules affected
 | Submodule | Why |
