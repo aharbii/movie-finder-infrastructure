@@ -86,7 +86,7 @@ authoritative mapping of credential IDs to env var names. Key IDs:
 
 - `qdrant-url`, `qdrant-api-key-ro`, `qdrant-api-key-rw`, `qdrant-collection-name`
 - `openai-api-key`, `anthropic-api-key`
-- `kaggle-username`, `kaggle-key`
+- `kaggle-api-token`
 - `app-secret-key`, `postgres-url`
 
 > `qdrant-api-key-rw` is used exclusively by the `rag_ingestion` CI pipeline.
