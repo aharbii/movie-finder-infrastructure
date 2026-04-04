@@ -140,6 +140,8 @@ make real API calls. At runtime, env vars are inherited from the hosting `app/` 
 Backend runtime also uses non-secret app settings that are not stored in Key Vault:
 `CORS_ORIGINS`, `GLOBAL_RATE_LIMIT`, `AUTH_RATE_LIMIT`, `CHAT_RATE_LIMIT`, and
 `MAX_MESSAGE_LENGTH`. Treat these as deployment-time configuration, not secrets.
+Set them in the Azure Container App environment variables, the Docker Compose
+`environment:` block for local development, or the backend `.env` file.
 
 ---
 
