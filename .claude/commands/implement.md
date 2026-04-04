@@ -48,6 +48,7 @@ git checkout -b [type]/[kebab-case-title]
 ## Step 5 — Implement
 
 Infrastructure context:
+
 - Target: Azure Container Apps + Azure Container Registry
 - CI/CD: Jenkins Multibranch Pipelines → ACR
 - Secrets: Azure Key Vault (managed identity) — never in code or Docker images

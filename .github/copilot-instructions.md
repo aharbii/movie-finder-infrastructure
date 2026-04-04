@@ -12,13 +12,13 @@ Status: **Issue #22** — IaC not yet implemented. This repo is a placeholder.
 
 ## Target Azure architecture
 
-| Resource | Purpose |
-|---|---|
-| Azure Container Registry (ACR) | Stores Docker images (backend + frontend) |
-| Azure Container Apps | Runs backend (FastAPI) and frontend (nginx) |
-| Azure Database for PostgreSQL | Managed PostgreSQL 16 |
-| Azure Key Vault | Runtime secrets (API keys, DB password, JWT secret) |
-| Managed Identity | Allows Container Apps to read Key Vault secrets without credentials in env |
+| Resource                       | Purpose                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| Azure Container Registry (ACR) | Stores Docker images (backend + frontend)                                  |
+| Azure Container Apps           | Runs backend (FastAPI) and frontend (nginx)                                |
+| Azure Database for PostgreSQL  | Managed PostgreSQL 16                                                      |
+| Azure Key Vault                | Runtime secrets (API keys, DB password, JWT secret)                        |
+| Managed Identity               | Allows Container Apps to read Key Vault secrets without credentials in env |
 
 Secrets are never baked into Docker images or passed through CI logs.
 Production secrets live in Azure Key Vault, injected at runtime via managed identity.
@@ -34,11 +34,11 @@ and the full cross-repo secret contract.
 
 ## IaC toolchain
 
-| Tool | Purpose |
-|---|---|
-| Terraform | Primary IaC (planned) |
-| Bicep | Azure-native alternative (under evaluation) |
-| `az` CLI | Ad-hoc operations and validation |
+| Tool      | Purpose                                     |
+| --------- | ------------------------------------------- |
+| Terraform | Primary IaC (planned)                       |
+| Bicep     | Azure-native alternative (under evaluation) |
+| `az` CLI  | Ad-hoc operations and validation            |
 
 ADR required before committing to either Terraform or Bicep — see issue #22.
 

@@ -22,19 +22,19 @@ that only query the vector store must never hold a key that can write to it.
 
 ### Tier definitions
 
-| Tier | Who uses it | Capability |
-|---|---|---|
-| **Read-only (RO)** | `backend/app/`, `backend/chain/` | Query (search, retrieve) only — no upsert, no delete |
-| **Write-capable (RW)** | `backend/rag_ingestion/` exclusively | Upsert and delete — full collection management |
+| Tier                   | Who uses it                          | Capability                                           |
+| ---------------------- | ------------------------------------ | ---------------------------------------------------- |
+| **Read-only (RO)**     | `backend/app/`, `backend/chain/`     | Query (search, retrieve) only — no upsert, no delete |
+| **Write-capable (RW)** | `backend/rag_ingestion/` exclusively | Upsert and delete — full collection management       |
 
 ### Environment variable names
 
-| Variable | Tier | Description |
-|---|---|---|
-| `QDRANT_URL` | Both | Qdrant Cloud cluster URL (same endpoint for both tiers) |
-| `QDRANT_API_KEY_RO` | RO only | Read-only API key — injected into app and chain |
-| `QDRANT_API_KEY_RW` | RW only | Write-capable API key — injected into rag_ingestion only |
-| `QDRANT_COLLECTION_NAME` | Both | Target collection name (may vary per environment) |
+| Variable                 | Tier    | Description                                              |
+| ------------------------ | ------- | -------------------------------------------------------- |
+| `QDRANT_URL`             | Both    | Qdrant Cloud cluster URL (same endpoint for both tiers)  |
+| `QDRANT_API_KEY_RO`      | RO only | Read-only API key — injected into app and chain          |
+| `QDRANT_API_KEY_RW`      | RW only | Write-capable API key — injected into rag_ingestion only |
+| `QDRANT_COLLECTION_NAME` | Both    | Target collection name (may vary per environment)        |
 
 > **Migration note:** The legacy `QDRANT_API_KEY` variable (single key, no suffix) is
 > superseded by `QDRANT_API_KEY_RO` and `QDRANT_API_KEY_RW`. Any repo still referencing
@@ -42,11 +42,11 @@ that only query the vector store must never hold a key that can write to it.
 
 ### Per-repo consumption table
 
-| Repo | Variable used | Tier |
-|---|---|---|
-| `aharbii/movie-finder-backend` (`app/`) | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO |
-| `aharbii/movie-finder-chain` | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO (dev/CI only — library consumed by `app/`) |
-| `aharbii/movie-finder-rag` (`rag_ingestion/`) | `QDRANT_URL`, `QDRANT_API_KEY_RW`, `QDRANT_COLLECTION_NAME` | RW |
+| Repo                                          | Variable used                                               | Tier                                          |
+| --------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| `aharbii/movie-finder-backend` (`app/`)       | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO                                            |
+| `aharbii/movie-finder-chain`                  | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO (dev/CI only — library consumed by `app/`) |
+| `aharbii/movie-finder-rag` (`rag_ingestion/`) | `QDRANT_URL`, `QDRANT_API_KEY_RW`, `QDRANT_COLLECTION_NAME` | RW                                            |
 
 ---
 
@@ -66,16 +66,16 @@ Secrets are read from Azure Key Vault via managed identity. No secret is passed 
 environment variables baked into Docker images or injected through Jenkins build logs.
 `rag_ingestion` secrets live in the Jenkins credentials store only, not in Azure Key Vault.
 
-| Secret | Azure Key Vault secret name | Container App |
-|---|---|---|
-| Qdrant cluster URL | `qdrant-url` | backend-app |
-| Qdrant read-only API key | `qdrant-api-key-ro` | backend-app |
-| Qdrant collection name | `qdrant-collection-name` | backend-app |
-| OpenAI API key | `openai-api-key` | backend-app |
-| Anthropic API key | `anthropic-api-key` | backend-app |
-| JWT signing key | `app-secret-key` | backend-app |
-| PostgreSQL URL | `postgres-url` | backend-app |
-| LangSmith API key _(opt-in)_ | `langsmith-api-key` | backend-app |
+| Secret                       | Azure Key Vault secret name | Container App |
+| ---------------------------- | --------------------------- | ------------- |
+| Qdrant cluster URL           | `qdrant-url`                | backend-app   |
+| Qdrant read-only API key     | `qdrant-api-key-ro`         | backend-app   |
+| Qdrant collection name       | `qdrant-collection-name`    | backend-app   |
+| OpenAI API key               | `openai-api-key`            | backend-app   |
+| Anthropic API key            | `anthropic-api-key`         | backend-app   |
+| JWT signing key              | `app-secret-key`            | backend-app   |
+| PostgreSQL URL               | `postgres-url`              | backend-app   |
+| LangSmith API key _(opt-in)_ | `langsmith-api-key`         | backend-app   |
 
 > **Manual step required:** All secrets above must be added to Azure Key Vault by the
 > operator. Claude cannot do this. See `CLAUDE.md §Secrets and credentials architecture`
@@ -86,13 +86,14 @@ environment variables baked into Docker images or injected through Jenkins build
 Jenkins credential IDs used during CONTRIBUTION and INTEGRATION pipeline runs. These must
 be added manually via the Jenkins UI.
 
-| Jenkins credential ID | Maps to env var | Used by |
-|---|---|---|
-| `qdrant-url` | `QDRANT_URL` | backend-app, chain pipelines |
-| `qdrant-api-key-ro` | `QDRANT_API_KEY_RO` | backend-app, chain pipelines |
+| Jenkins credential ID    | Maps to env var          | Used by                      |
+| ------------------------ | ------------------------ | ---------------------------- |
+| `qdrant-url`             | `QDRANT_URL`             | backend-app, chain pipelines |
+| `qdrant-api-key-ro`      | `QDRANT_API_KEY_RO`      | backend-app, chain pipelines |
 | `qdrant-collection-name` | `QDRANT_COLLECTION_NAME` | backend-app, chain pipelines |
 
 > **Secrets not needed in current CI:**
+>
 > - `APP_SECRET_KEY` and `DATABASE_URL` — the app test suite hard-codes a test JWT secret
 >   and connects to a local Postgres sidecar (`postgres:postgres`). Neither production
 >   secret is needed in CI.
@@ -120,21 +121,21 @@ declare all variables it consumes, even if the value is injected at runtime.
 suite fully mocks all external dependencies (Qdrant, OpenAI, Anthropic) and does not
 make real API calls. At runtime, env vars are inherited from the hosting `app/` process.
 
-| Variable | backend/app | backend/chain | backend/rag_ingestion | frontend |
-|---|:---:|:---:|:---:|:---:|
-| `QDRANT_URL` | ✓ | ✓ (dev) | ✓ | — |
-| `QDRANT_API_KEY_RO` | ✓ | ✓ (dev) | — | — |
-| `QDRANT_API_KEY_RW` | — | — | ✓ | — |
-| `QDRANT_COLLECTION_NAME` | ✓ | ✓ (dev) | ✓ | — |
-| `OPENAI_API_KEY` | — | ✓ (dev) | ✓ | — |
-| `ANTHROPIC_API_KEY` | — | ✓ (dev) | — | — |
-| `APP_SECRET_KEY` | ✓ | — | — | — |
-| `DATABASE_URL` | ✓ | — | — | — |
-| `KAGGLE_API_TOKEN` | — | — | ✓ | — |
-| `LANGSMITH_API_KEY` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
-| `LANGSMITH_TRACING` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
-| `LANGSMITH_ENDPOINT` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
-| `LANGSMITH_PROJECT` | ✓ (opt-in) | ✓ (opt-in, dev) | — | — |
+| Variable                 | backend/app |  backend/chain  | backend/rag_ingestion | frontend |
+| ------------------------ | :---------: | :-------------: | :-------------------: | :------: |
+| `QDRANT_URL`             |      ✓      |     ✓ (dev)     |           ✓           |    —     |
+| `QDRANT_API_KEY_RO`      |      ✓      |     ✓ (dev)     |           —           |    —     |
+| `QDRANT_API_KEY_RW`      |      —      |        —        |           ✓           |    —     |
+| `QDRANT_COLLECTION_NAME` |      ✓      |     ✓ (dev)     |           ✓           |    —     |
+| `OPENAI_API_KEY`         |      —      |     ✓ (dev)     |           ✓           |    —     |
+| `ANTHROPIC_API_KEY`      |      —      |     ✓ (dev)     |           —           |    —     |
+| `APP_SECRET_KEY`         |      ✓      |        —        |           —           |    —     |
+| `DATABASE_URL`           |      ✓      |        —        |           —           |    —     |
+| `KAGGLE_API_TOKEN`       |      —      |        —        |           ✓           |    —     |
+| `LANGSMITH_API_KEY`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
+| `LANGSMITH_TRACING`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
+| `LANGSMITH_ENDPOINT`     | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
+| `LANGSMITH_PROJECT`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
 
 ---
 

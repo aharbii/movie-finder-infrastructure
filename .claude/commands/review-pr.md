@@ -16,6 +16,7 @@ gh pr diff $ARGUMENTS --repo aharbii/movie-finder-infrastructure
 ```
 
 Also check recent infrastructure changes for context:
+
 ```bash
 git log --oneline -10
 ```
@@ -25,6 +26,7 @@ git log --oneline -10
 ## Blocking findings
 
 **Infrastructure-specific:**
+
 - Secrets, API keys, or credentials in any file (hardcoded)
 - Connection strings with embedded credentials (must use managed identity + Key Vault)
 - Resource names that conflict with environment isolation (prod/staging/dev must be separate)
