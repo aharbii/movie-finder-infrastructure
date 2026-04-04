@@ -137,6 +137,10 @@ make real API calls. At runtime, env vars are inherited from the hosting `app/` 
 | `LANGSMITH_ENDPOINT`     | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
 | `LANGSMITH_PROJECT`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
 
+Backend runtime also uses non-secret app settings that are not stored in Key Vault:
+`CORS_ORIGINS`, `GLOBAL_RATE_LIMIT`, `AUTH_RATE_LIMIT`, `CHAT_RATE_LIMIT`, and
+`MAX_MESSAGE_LENGTH`. Treat these as deployment-time configuration, not secrets.
+
 ---
 
 ## 4. Dependency notes
