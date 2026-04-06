@@ -2,7 +2,7 @@
 
 **Repo:** `aharbii/movie-finder-infrastructure`
 **Parent tracker:** `aharbii/movie-finder`
-**Status:** IaC not yet implemented (issue #22). Read current repo state before assuming what exists.
+**Status:** Terraform IaC scaffold implemented in `terraform/`. Modules: networking, container_registry, key_vault, database, container_apps. Environments: staging.tfvars, production.tfvars.
 
 Implement GitHub issue #$ARGUMENTS from `aharbii/movie-finder-infrastructure`.
 
@@ -26,13 +26,14 @@ gh issue view [PARENT_NUMBER] --repo aharbii/movie-finder
 
 ---
 
-## Step 3 — Check current repo state first
+## Step 3 — Check current Terraform state
 
 ```bash
-ls -la
+ls terraform/modules/
+ls terraform/environments/
 ```
 
-This repo may have minimal content. Read what exists before implementing.
+Understand which modules already exist before modifying or adding.
 
 ---
 
