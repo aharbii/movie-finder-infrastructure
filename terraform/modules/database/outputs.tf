@@ -1,4 +1,4 @@
-output "id"   { value = azurerm_postgresql_flexible_server.main.id }
+output "id" { value = azurerm_postgresql_flexible_server.main.id }
 output "host" { value = azurerm_postgresql_flexible_server.main.fqdn }
 output "connection_string" {
   sensitive = true

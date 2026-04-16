@@ -55,7 +55,7 @@ resource "azurerm_container_app" "backend" {
   registry {
     server               = var.acr_login_server
     username             = var.acr_admin_username
-    password_secret_name = "acr-password"
+    password_secret_name = "acr-password" # pragma: allowlist secret
   }
 
   secret {
@@ -83,15 +83,15 @@ resource "azurerm_container_app" "backend" {
       }
       env {
         name        = "APP_SECRET_KEY"
-        secret_name = "app-secret-key"
+        secret_name = "app-secret-key" # pragma: allowlist secret
       }
 
       liveness_probe {
-        path             = "/health/live"
-        port             = 8000
-        transport        = "HTTP"
-        initial_delay    = 15
-        period_seconds   = 30
+        path                    = "/health/live"
+        port                    = 8000
+        transport               = "HTTP"
+        initial_delay           = 15
+        interval_seconds        = 30
         failure_count_threshold = 3
       }
 
@@ -138,7 +138,7 @@ resource "azurerm_container_app" "frontend" {
   registry {
     server               = var.acr_login_server
     username             = var.acr_admin_username
-    password_secret_name = "acr-password"
+    password_secret_name = "acr-password" # pragma: allowlist secret
   }
 
   secret {
@@ -162,11 +162,12 @@ resource "azurerm_container_app" "frontend" {
       }
 
       liveness_probe {
-        path          = "/"
-        port          = 80
-        transport     = "HTTP"
-        initial_delay = 5
-        period_seconds = 30
+        path                    = "/"
+        port                    = 80
+        transport               = "HTTP"
+        initial_delay           = 5
+        interval_seconds        = 30
+        failure_count_threshold = 3
       }
     }
 

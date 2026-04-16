@@ -92,6 +92,9 @@ uv run pre-commit run --all-files
 # Frontend:
 npm run lint && npm test
 
+# Infrastructure:
+make check && make pre-commit
+
 # Docs:
 ./scripts/prepare-docs.sh && mkdocs build --strict
 ```

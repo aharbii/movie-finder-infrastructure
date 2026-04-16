@@ -20,9 +20,9 @@ acr_sku           = "Standard"
 acr_admin_enabled = true
 
 # Database
-db_sku_name  = "B_Standard_B1ms"
+db_sku_name   = "B_Standard_B1ms"
 db_storage_mb = 32768
-db_version   = "16"
+db_version    = "16"
 
 # Container Apps — staging runs minimal replicas
 backend_min_replicas  = 1

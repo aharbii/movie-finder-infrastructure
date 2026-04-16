@@ -1,24 +1,35 @@
 # Claude Code — infrastructure submodule
 
-This is **`movie-finder-infrastructure`** (`infrastructure/`) — part of the Movie Finder project.
+This is **`movie-finder-infrastructure`** (`infrastructure/`) — part of the
+Movie Finder project.
 GitHub repo: `aharbii/movie-finder-infrastructure` · Parent repo: `aharbii/movie-finder`
 
 ---
 
 ## What this submodule does
 
-IaC and Azure provisioning for Movie Finder.
+Terraform-first IaC for the Azure resources consumed by Movie Finder.
 
-> **Status:** Terraform/Bicep implementation is not yet complete (tracked as issue #22).
-> Read the current state of this directory before making assumptions about what exists.
+Current scope:
 
-Intended scope:
-
-- Azure Container Apps (backend + frontend)
-- Azure Container Registry (Docker image storage)
-- Azure Key Vault (runtime secrets via managed identity — never baked into images)
+- Azure networking for app and database subnets
+- Azure Container Registry
+- Azure Key Vault for runtime secrets
 - Azure Database for PostgreSQL Flexible Server
-- Networking, RBAC, and managed identity configuration
+- Azure Container Apps environment and app definitions
+- Repo-local Docker tooling for Terraform validation and pre-commit checks
+
+---
+
+## Current ownership boundary
+
+- This repo owns the infrastructure definitions and validation workflow.
+- The parent `movie-finder` repo owns the unified Jenkins pipeline that deploys
+  backend and frontend together.
+- This repo is consumed there as the `infrastructure/` submodule; after infra
+  changes merge here, the parent repo must bump the submodule pointer.
+- Do not move runtime deployment logic from the parent repo into this repo
+  unless explicitly asked.
 
 ---
 
@@ -34,19 +45,47 @@ Intended scope:
 | `backend/chain/`         | `aharbii/movie-finder-chain`          | LangGraph AI pipeline          |
 | `backend/chain/imdbapi/` | `aharbii/imdbapi-client`              | Async IMDb REST client         |
 | `backend/rag_ingestion/` | `aharbii/movie-finder-rag`            | Offline embedding ingestion    |
-| `frontend/`              | `aharbii/movie-finder-frontend`       | Angular 21 SPA                 |
+| `frontend/`              | `aharbii/movie-finder-frontend`       | Angular SPA                    |
 | `docs/`                  | `aharbii/movie-finder-docs`           | MkDocs documentation           |
 | `infrastructure/`        | `aharbii/movie-finder-infrastructure` | **← you are here**             |
 
-### CI/CD pipeline
+### CI / deployment boundary
 
-Jenkins Multibranch Pipelines push to Azure Container Registry; Azure Container Apps pulls from ACR.
+- GitHub Actions in this repo validate Terraform formatting, initialization, and TFLint.
+- The parent `movie-finder` repo's unified Jenkinsfile performs runtime build and deployment.
+- If an infrastructure change requires downstream documentation, update the parent docs repo
+  only when the change is actually user-facing or operationally necessary.
 
-| Pipeline mode | Trigger             | Stages                                                                           |
-| ------------- | ------------------- | -------------------------------------------------------------------------------- |
-| CONTRIBUTION  | Feature branch / PR | Lint · Test                                                                      |
-| INTEGRATION   | Push to `main`      | Lint · Test · Build Docker · Push `:sha8` + `:latest` → ACR                      |
-| RELEASE       | `v*` tag            | Lint · Test · Build · Push `:v1.2.3` → ACR · Production deploy (manual approval) |
+---
+
+## Local contributor workflow
+
+Contributor workflow in this repo is **strictly Docker-only** from the repo root.
+
+### Commands
+
+- `make init` — build tooling image and install the git pre-commit hook
+- `make editor-up` / `make editor-down` — start or stop the long-lived tooling container
+- `make shell` — open a shell in the tooling container
+- `make fmt` / `make fmt-check` — run Terraform formatting
+- `make validate` — run `terraform init -backend=false -reconfigure && terraform validate`
+- `make tflint` — run `tflint --init && tflint --format compact`
+- `make pre-commit` — run the full local hook suite
+- `make check` — CI-aligned validation gate (`fmt-check + validate + tflint`)
+
+### VS Code
+
+Run `make editor-up`, then use `Dev Containers: Attach to Running Container...`
+and attach to the `infra` service container.
+
+Committed workspace files:
+
+- `.vscode/settings.json` — Terraform formatter, YAML formatter, attached-container defaults
+- `.vscode/tasks.json` — `make ...` task surface
+- `.vscode/extensions.json` — Remote Containers, Terraform, Azure, Docker, Makefile, YAML
+
+If you modify `.vscode/`, also update `AGENTS.md`, `GEMINI.md`, and
+`.github/copilot-instructions.md`.
 
 ---
 
@@ -54,47 +93,26 @@ Jenkins Multibranch Pipelines push to Azure Container Registry; Azure Container 
 
 **Where secrets live:**
 
-| Secret type                                  | Location                       | Who manages                      |
-| -------------------------------------------- | ------------------------------ | -------------------------------- |
-| Runtime API keys (Anthropic, OpenAI, Qdrant) | Azure Key Vault                | User — manually                  |
-| Database password                            | Azure Key Vault                | User — manually                  |
-| JWT signing key (`APP_SECRET_KEY`)           | Azure Key Vault                | User — manually                  |
-| CI build credentials (API keys for tests)    | Jenkins credentials store      | User — manually (via Jenkins UI) |
-| Container registry login                     | ACR managed identity           | Azure — automatic                |
-| Key Vault access                             | Container App managed identity | Azure — automatic                |
+| Secret type                                  | Location                  | Who manages                      |
+| -------------------------------------------- | ------------------------- | -------------------------------- |
+| Runtime API keys and app secrets             | Azure Key Vault           | User — manually                  |
+| CI build credentials                         | Jenkins credentials store | User — manually                  |
+| Container registry and Key Vault access      | Azure managed identity    | Azure — automatic                |
 
 **Rules:**
 
-- Never pass secrets through Jenkins build logs
+- Never commit secrets or `.env` files
 - Never bake secrets into Docker images
-- Never commit `.env` or any secret file — `detect-secrets` hook enforces this
-- Rotate secrets via Key Vault, not by editing pipelines
-- See `docs/devops-setup.md §12` for the Key Vault rotation workflow
+- Never pass secrets through CI logs
+- Rotate runtime secrets in Key Vault, not through git
+- See `docs/qdrant-secret-model.md` for the authoritative secret-name contract
 
-**When adding a new secret:**
+When adding a new secret:
 
-1. Add to Azure Key Vault manually
-2. Reference it in the Container App environment via managed identity binding
-3. Add to Jenkins credentials store (if needed at CI time)
-4. Update `docs/devops-setup.md` credentials table
-5. Update `.env.example` in every affected repo
-6. Flag all of the above steps explicitly to the user — none are automatable by Claude
-
----
-
-## Jenkins credential IDs
-
-See `docs/qdrant-secret-model.md` for the full cross-repo secret contract and the
-authoritative mapping of credential IDs to env var names. Key IDs:
-
-- `qdrant-url`, `qdrant-api-key-ro`, `qdrant-api-key-rw`, `qdrant-collection-name`
-- `openai-api-key`, `anthropic-api-key`
-- `kaggle-api-token`
-- `app-secret-key`, `postgres-url`
-
-> `qdrant-api-key-rw` is used exclusively by the `rag_ingestion` CI pipeline.
-> `rag_ingestion` is an offline CI job — it is never deployed as an Azure Container App.
-> Its secrets live in the Jenkins credentials store only, not in Azure Key Vault.
+1. Add it to Azure Key Vault manually
+2. Add CI credentials manually if the pipeline needs it
+3. Update downstream `.env.example` files only if the actual contract changes
+4. Flag all manual steps explicitly in the PR description or issue thread
 
 ---
 
@@ -120,57 +138,29 @@ authoritative mapping of credential IDs to env var names. Key IDs:
 ## Session start protocol
 
 1. `gh issue list --repo aharbii/movie-finder --state open`
-2. Verify issue #22 status before starting IaC work — check what currently exists
-3. Inspect `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md` when present, and a
-   recent example of the same type
-4. Create the parent issue in `aharbii/movie-finder`, then the linked child issue in
-   `aharbii/movie-finder-infrastructure` only if this repo will actually change
-5. Create a branch from `main` and work through the checklist
-
----
-
-## Branching and commits
-
-```
-feature/<kebab>  chore/<kebab>  fix/<kebab>
-```
-
-Conventional Commits: `chore(infra): add Key Vault secret for Gemini API key`
+2. Verify the relevant infra issue/PR status before starting work
+3. Inspect `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and a recent example
+4. Create the parent issue in `aharbii/movie-finder`, then the linked child issue here only if
+   this repo will actually change
+5. Create a branch from `main` unless stacked work is explicitly intended
 
 ---
 
 ## Cross-cutting change checklist
 
-Full detail in `ai-context/issue-agent-briefing-template.md`.
+| #   | Category     | Key gate                                                                                              |
+| --- | ------------ | ----------------------------------------------------------------------------------------------------- |
+| 1   | **Issues**   | Parent `aharbii/movie-finder` issue exists; child issue here only if this repo changes               |
+| 2   | **Branch**   | `feature/`, `fix/`, or `chore/` branch in this repo; root repo pointer bump follows after merge      |
+| 3   | **IaC**      | No secrets in source; Terraform validation passes; changes are idempotent                            |
+| 4   | **Secrets**  | New manual Key Vault / Jenkins steps explicitly called out                                            |
+| 5   | **CI**       | GitHub Actions validation still reflects the local `make check` contract                              |
+| 6   | **Docs**     | `CHANGELOG.md` updated; parent docs repo touched only when the infrastructure contract actually needs it |
+| 7   | **Pointer**  | Parent `movie-finder` submodule pointer updated after infra merge or stacked branch refresh           |
 
-| #   | Category     | Key gate                                                                                                                                                                           |
-| --- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Issues**   | Parent `aharbii/movie-finder` + child here only if this repo changes; templates inspected                                                                                          |
-| 2   | **Branch**   | `feature/fix/chore` in this repo + pointer-bump `chore/` in root `movie-finder`                                                                                                    |
-| 3   | **ADR**      | New Azure service, cloud provider, or secrets architecture decision → ADR in `docs/`                                                                                               |
-| 4   | **IaC**      | No secrets in source; changes are idempotent; Terraform/Bicep validate passes                                                                                                      |
-| 5   | **Secrets**  | List ALL new Key Vault secrets, Jenkins credentials, GitHub Secrets explicitly — user adds manually; `.env.example` updated in every affected repo; `docs/devops-setup.md` updated |
-| 6   | **CI**       | `Jenkinsfile` reviewed; INTEGRATION/RELEASE pipeline mode still valid                                                                                                              |
-| 7   | **Diagrams** | `10-deployment-azure.puml` updated; `workspace.dsl` deployment view updated; commit to `docs/` first; **never `.mdj`**                                                             |
-| 8   | **Docs**     | `docs/devops-setup.md` updated; `CHANGELOG.md` updated                                                                                                                             |
-
-### 9. Sibling submodules affected
-
-| Submodule      | Why                                                   |
-| -------------- | ----------------------------------------------------- |
-| All submodules | New env vars → `.env.example` updates everywhere      |
-| `backend/`     | New Azure services may require new SDK deps or config |
-| `docs/`        | DevOps docs, deployment diagram, ADR                  |
-
-### 10. Submodule pointer bump
+### Submodule pointer bump
 
 ```bash
 # in root movie-finder
 git add infrastructure && git commit -m "chore(infra): bump to latest main"
 ```
-
-### 11. Pull request
-
-- [ ] PR in `aharbii/movie-finder-infrastructure` discloses the AI authoring tool + model
-- [ ] PR in `aharbii/movie-finder` (pointer bump)
-- [ ] Any AI-assisted review comment or approval discloses the review tool + model

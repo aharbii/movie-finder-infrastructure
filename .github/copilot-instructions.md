@@ -1,55 +1,45 @@
 # GitHub Copilot — movie-finder-infrastructure
 
-Infrastructure as Code for Movie Finder on Azure. Provisions all Azure resources needed
-to run the application: Container Apps, Container Registry, PostgreSQL, Key Vault, and
-supporting services.
+Terraform-first Azure Infrastructure as Code for Movie Finder.
 
-Parent project: `aharbii/movie-finder` — all issues created there first, then linked here.
-
-Status: **Issue #22** — IaC not yet implemented. This repo is a placeholder.
+This repo owns the infrastructure definitions and the repo-local validation
+workflow. The parent `aharbii/movie-finder` repository still owns the unified
+Jenkins deployment pipeline that rolls out backend and frontend together.
 
 ---
 
-## Target Azure architecture
+## What exists here
 
-| Resource                       | Purpose                                                                    |
-| ------------------------------ | -------------------------------------------------------------------------- |
-| Azure Container Registry (ACR) | Stores Docker images (backend + frontend)                                  |
-| Azure Container Apps           | Runs backend (FastAPI) and frontend (nginx)                                |
-| Azure Database for PostgreSQL  | Managed PostgreSQL 16                                                      |
-| Azure Key Vault                | Runtime secrets (API keys, DB password, JWT secret)                        |
-| Managed Identity               | Allows Container Apps to read Key Vault secrets without credentials in env |
-
-Secrets are never baked into Docker images or passed through CI logs.
-Production secrets live in Azure Key Vault, injected at runtime via managed identity.
-
-`rag_ingestion` is an offline CI pipeline and is **never deployed as an Azure Container
-App**. Its secrets (`qdrant-api-key-rw`, `openai-api-key`, `kaggle-api-token`) live in the Jenkins
-credentials store only.
-
-See `docs/qdrant-secret-model.md` for the authoritative credential ID → env var mapping
-and the full cross-repo secret contract.
+- `terraform/` for Azure networking, ACR, Key Vault, PostgreSQL, and Container Apps
+- `Dockerfile`, `docker-compose.yml`, and `Makefile` for Docker-only local validation
+- `.pre-commit-config.yaml` and `.secrets.baseline` for file-health and secret checks
+- `.vscode/` tasks/settings aligned with the attached-container workflow
 
 ---
 
-## IaC toolchain
+## Local workflow
 
-| Tool      | Purpose                                     |
-| --------- | ------------------------------------------- |
-| Terraform | Primary IaC (planned)                       |
-| Bicep     | Azure-native alternative (under evaluation) |
-| `az` CLI  | Ad-hoc operations and validation            |
+Use the repo root and prefer the committed commands:
 
-ADR required before committing to either Terraform or Bicep — see issue #22.
+- `make init`
+- `make editor-up`
+- `make fmt`
+- `make validate`
+- `make tflint`
+- `make pre-commit`
+- `make check`
+
+Do not assume host-installed Terraform, TFLint, or pre-commit.
 
 ---
 
-## VSCode extensions (installed in this workspace)
+## Secrets model
 
-- `hashicorp.terraform`
-- `ms-azuretools.vscode-bicep`
-- `ms-azuretools.azure-resources`
-- `ms-azuretools.vscode-docker`
+- Runtime secrets live in Azure Key Vault
+- CI secrets live in Jenkins credentials
+- Secrets are never committed, baked into images, or passed through CI logs
+- `rag_ingestion` remains an offline CI pipeline and is never an Azure Container App
+- `docs/qdrant-secret-model.md` is the authoritative contract for secret names and env vars
 
 ---
 
@@ -65,19 +55,7 @@ ADR required before committing to either Terraform or Bicep — see issue #22.
   description, file references, and acceptance criteria repo-specific.
 - If CI, required checks, or merge policy changes affect this repo, update contributor-facing docs
   here and in `aharbii/movie-finder` where relevant.
-- If a new standalone issue appears mid-session, branch from `main` unless stacking is explicitly
-  requested.
+- Update the parent docs repo only when the infrastructure contract actually changes; do not touch
+  MkDocs content gratuitously.
 - PR descriptions must disclose the AI authoring tool + model. Any AI-assisted review comment or
   approval must also disclose the review tool + model.
-
----
-
-## Cross-cutting — check for every change
-
-1. GitHub issue in `aharbii/movie-finder` + linked child issue here only if this repo changes, using the current templates and recent examples
-2. Branch: `feature/`, `chore/` (kebab-case) from `main` unless stacking is explicitly requested
-3. **ADR required** for any new Azure resource, cloud provider decision, or IaC toolchain choice
-4. New secrets → update `.env.example` in all affected repos + flag for Key Vault + Jenkins credentials store
-5. New Azure resources → update `docs/architecture/10-deployment-azure.puml` + Structurizr `workspace.dsl`
-6. Cost implications → flag to project owner before merging
-7. Changes committed here first, then submodule pointer bumped in parent repo (`aharbii/movie-finder`)

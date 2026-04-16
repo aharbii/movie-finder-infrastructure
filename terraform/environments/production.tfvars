@@ -17,9 +17,9 @@ acr_sku           = "Standard"
 acr_admin_enabled = true
 
 # Database — production uses a larger SKU with ZoneRedundant HA
-db_sku_name  = "GP_Standard_D2s_v3"
+db_sku_name   = "GP_Standard_D2s_v3"
 db_storage_mb = 65536
-db_version   = "16"
+db_version    = "16"
 
 # Container Apps — production runs higher replica counts
 backend_min_replicas  = 2

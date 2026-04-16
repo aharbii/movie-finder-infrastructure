@@ -27,10 +27,11 @@ cat /tmp/pr.txt | codex "$(cat ai-context/prompts/review-pr.md)"
 ## Important infrastructure rules
 
 - No secrets, credentials, or API keys in any file
-- Use Azure managed identity + Key Vault for all secrets
-- New Azure resources must have cost implications noted
-- New secrets must be manually added to Azure Key Vault AND Jenkins credentials store
-- See `docs/qdrant-secret-model.md` for Qdrant access tier model and secret naming
+- Use Azure Key Vault for runtime secrets and Jenkins credentials for CI-only secrets
+- Use the committed Docker-only workflow from this repo root
+- Run `make check` for Terraform validation and `make pre-commit` before committing
+- Deployment orchestration remains in the parent `movie-finder` repo
+- Update the parent docs repo only when the infrastructure contract actually changes
 
 ## Issue hierarchy
 

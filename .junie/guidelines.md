@@ -1,49 +1,52 @@
 # JetBrains AI (Junie) — infrastructure submodule guidelines
 
-This is **`movie-finder-infrastructure`** (`infrastructure/`) — IaC / Azure provisioning.
+This is **`movie-finder-infrastructure`** (`infrastructure/`) — Terraform-first
+Azure infrastructure for Movie Finder.
 GitHub repo: `aharbii/movie-finder-infrastructure` · Parent: `aharbii/movie-finder`
 
 ---
 
 ## What this submodule does
 
-Terraform IaC for all Azure infrastructure resources used by Movie Finder.
+Terraform IaC for the Azure resources consumed by the application.
 
-- **Provider:** `azurerm ~> 4.0`
-- **State:** Azure Storage backend (remote state, state locking)
-- **Environments:** dev / staging / prod via workspace or `.tfvars`
-- **Secret lifecycle:** `ignore_changes` on Key Vault secret values (rotated externally)
-- **Image lifecycle:** `ignore_changes` on container image tags (updated by CI/CD)
+- `terraform/modules/networking`
+- `terraform/modules/container_registry`
+- `terraform/modules/key_vault`
+- `terraform/modules/database`
+- `terraform/modules/container_apps`
 
-### Module layout
+Application deployment remains owned by the parent `movie-finder` repository's
+unified Jenkins pipeline. This repo owns definitions and validation, not the
+runtime rollout orchestration.
 
-```
-terraform/
-├── main.tf              Root module
-├── variables.tf         Input variables
-├── outputs.tf           Output values
-├── providers.tf         Provider configuration (azurerm, random)
-├── backend.tf           Remote state configuration
-└── modules/
-    ├── networking/      VNet, subnets, NSGs
-    ├── compute/         Azure Container Apps environment + apps
-    ├── database/        Azure Database for PostgreSQL Flexible Server
-    ├── storage/         Azure Storage (state bucket, data)
-    └── keyvault/        Azure Key Vault + access policies
-```
+---
+
+## Local tooling contract
+
+Use the committed Docker-first workflow from this repo root:
+
+- `make init`
+- `make editor-up`
+- `make shell`
+- `make fmt`
+- `make validate`
+- `make tflint`
+- `make pre-commit`
+- `make check`
+
+Do not assume host-installed Terraform, TFLint, or pre-commit.
 
 ---
 
 ## Terraform standards
 
-- `terraform fmt` must pass (enforced by pre-commit)
-- `terraform validate` must pass before any plan/apply
-- `tflint` must pass
-- `terraform plan` before any `apply` — never `apply` without reviewing the plan
-- Remote state always — never local `terraform.tfstate` in repo
-- Tag all resources: `environment`, `project = "movie-finder"`, `managed_by = "terraform"`
-- No hardcoded secrets — use Key Vault references or variable files not committed to git
-- `ignore_changes` on `image` (container tags) and Key Vault secret values
+- `terraform fmt -check -recursive` must pass
+- `terraform init -backend=false -reconfigure && terraform validate` must pass
+- `tflint --init && tflint --format compact` must pass
+- Remote state remains Azure Storage backed; do not commit `terraform.tfstate`
+- No hardcoded secrets — runtime secrets belong in Key Vault, CI secrets in Jenkins
+- `ignore_changes` on runtime-managed values is acceptable when justified
 
 ---
 
@@ -51,25 +54,18 @@ terraform/
 
 - Branches: `feature/<kebab>`, `fix/<kebab>`, `chore/<kebab>`
 - Commits: `feat(infra): add Azure Container Apps environment`
-- Always run `terraform plan` and share output in PR for review
-- After merge: bump pointer in root `movie-finder`
+- After infra changes land here, bump the `infrastructure/` submodule pointer in
+  the parent `movie-finder` repo
+- Update the parent docs repo only when the infrastructure contract actually changes
 
 ---
 
-## Environment variables / secrets
+## Secret handling
 
 All production secrets live in Azure Key Vault. Never commit secrets.
 New secrets must be:
-1. Added to Key Vault module in Terraform
-2. Referenced via managed identity in container app config
-3. Added to `backend/.env.example` or `frontend/.env.example` for local dev
-4. Documented in `ONBOARDING.md` and `CONTRIBUTING.md`
 
----
-
-## Submodule pointer bump
-
-```bash
-# in root movie-finder
-git add infrastructure && git commit -m "chore(infra): bump to latest main"
-```
+1. Added to Key Vault manually
+2. Added to Jenkins credentials manually if CI needs them
+3. Reflected in downstream `.env.example` files only when the contract changes
+4. Called out explicitly in the PR or issue discussion

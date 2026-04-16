@@ -1,9 +1,6 @@
 # =============================================================================
 # movie-finder — Terraform root module
 #
-# Primary cloud: Azure
-# Optional clouds: AWS, GCP (enable via variables)
-#
 # Resource naming convention: movie-finder-<component>-<environment>
 # =============================================================================
 
@@ -77,14 +74,14 @@ module "key_vault" {
 
   # Application secrets — injected at apply time, never stored in plaintext
   secrets = {
-    app-secret-key     = var.app_secret_key
-    openai-api-key     = var.openai_api_key
-    anthropic-api-key  = var.anthropic_api_key
-    qdrant-url         = var.qdrant_url
-    qdrant-api-key-ro  = var.qdrant_api_key_ro
-    langsmith-api-key  = var.langsmith_api_key
-    db-admin-username  = var.db_admin_username
-    db-admin-password  = var.db_admin_password
+    app-secret-key    = var.app_secret_key
+    openai-api-key    = var.openai_api_key
+    anthropic-api-key = var.anthropic_api_key
+    qdrant-url        = var.qdrant_url
+    qdrant-api-key-ro = var.qdrant_api_key_ro
+    langsmith-api-key = var.langsmith_api_key
+    db-admin-username = var.db_admin_username
+    db-admin-password = var.db_admin_password
   }
 }
 
@@ -116,21 +113,21 @@ module "database" {
 module "container_apps" {
   source = "./modules/container_apps"
 
-  resource_group_name        = azurerm_resource_group.main.name
-  location                   = azurerm_resource_group.main.location
-  environment                = local.env
-  prefix                     = local.prefix
-  infrastructure_subnet_id   = module.networking.apps_subnet_id
-  acr_login_server           = module.container_registry.login_server
-  acr_admin_username         = module.container_registry.admin_username
-  acr_admin_password         = module.container_registry.admin_password
-  key_vault_id               = module.key_vault.id
-  backend_image_tag          = var.backend_image_tag
-  frontend_image_tag         = var.frontend_image_tag
-  backend_min_replicas       = var.backend_min_replicas
-  backend_max_replicas       = var.backend_max_replicas
-  frontend_min_replicas      = var.frontend_min_replicas
-  frontend_max_replicas      = var.frontend_max_replicas
-  database_url               = module.database.connection_string
-  tags                       = local.default_tags
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  environment              = local.env
+  prefix                   = local.prefix
+  infrastructure_subnet_id = module.networking.apps_subnet_id
+  acr_login_server         = module.container_registry.login_server
+  acr_admin_username       = module.container_registry.admin_username
+  acr_admin_password       = module.container_registry.admin_password
+  key_vault_id             = module.key_vault.id
+  backend_image_tag        = var.backend_image_tag
+  frontend_image_tag       = var.frontend_image_tag
+  backend_min_replicas     = var.backend_min_replicas
+  backend_max_replicas     = var.backend_max_replicas
+  frontend_min_replicas    = var.frontend_min_replicas
+  frontend_max_replicas    = var.frontend_max_replicas
+  database_url             = module.database.connection_string
+  tags                     = local.default_tags
 }

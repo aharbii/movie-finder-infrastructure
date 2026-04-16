@@ -1,0 +1,39 @@
+# =============================================================================
+# movie-finder-infrastructure — Docker-only local development stack
+#
+# Services:
+#   infra  Attached-container workspace for Terraform validation, pre-commit,
+#          and editor/VS Code flows
+#
+# Scope:
+#   - Local tooling only
+#   - No Azure resources are created automatically from this compose file
+# =============================================================================
+
+name: movie-finder-infrastructure-local
+
+services:
+  infra:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: movie-finder-infrastructure:dev
+    working_dir: /workspace
+    command:
+      - "sleep"
+      - "infinity"
+    environment:
+      GIT_DIR: /workspace/.gitdir
+      GIT_WORK_TREE: /workspace
+    volumes:
+      - .:/workspace
+      - ${INFRASTRUCTURE_GIT_DIR:-.git}:/workspace/.gitdir
+      - pre_commit_cache:/root/.cache/pre-commit
+      - tflint_cache:/root/.tflint.d
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+volumes:
+  pre_commit_cache:
+  tflint_cache:

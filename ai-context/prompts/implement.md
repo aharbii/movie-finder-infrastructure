@@ -1,7 +1,7 @@
 # Implement Prompt — movie-finder-infrastructure
 
 **Repo:** `aharbii/movie-finder-infrastructure`
-**Pre-commit:** (no pre-commit; validate with `terraform fmt -check && terraform validate` if applicable)
+**Pre-commit:** `make pre-commit`
 **Warning:** No secrets in any file. New secrets must be flagged for Azure Key Vault + Jenkins manual setup.
 
 Read ai-context/issue-agent-briefing-template.md for the Agent Briefing format.
@@ -45,7 +45,8 @@ Step 6: Implement the acceptance criteria. No more, no less.
 Step 7: Apply cross-cutting updates listed in the Agent Briefing.
 
 Step 8: Run quality checks.
-(no pre-commit; validate with `terraform fmt -check && terraform validate` if applicable)
+make check
+make pre-commit
 
 Step 9: Commit.
 git add [specific files only — never git add -A]

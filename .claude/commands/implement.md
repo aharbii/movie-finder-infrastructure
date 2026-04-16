@@ -2,7 +2,7 @@
 
 **Repo:** `aharbii/movie-finder-infrastructure`
 **Parent tracker:** `aharbii/movie-finder`
-**Status:** Terraform IaC scaffold implemented in `terraform/`. Modules: networking, container_registry, key_vault, database, container_apps. Environments: staging.tfvars, production.tfvars.
+**Status:** Terraform IaC scaffold lives in `terraform/`; local validation runs through the committed Docker-first Makefile workflow.
 
 Implement GitHub issue #$ARGUMENTS from `aharbii/movie-finder-infrastructure`.
 
@@ -62,12 +62,8 @@ Infrastructure context:
 ## Step 6 — Validate
 
 ```bash
-# Terraform (if applicable):
-terraform fmt -check
-terraform validate
-
-# Bicep (if applicable):
-az bicep build --file [file]
+make check
+make pre-commit
 ```
 
 ---
