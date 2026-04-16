@@ -1,62 +1,128 @@
 # Movie Finder — Infrastructure
 
-IaC and Azure provisioning for the Movie Finder application.
+Terraform-first Azure Infrastructure as Code and local validation tooling for
+the Movie Finder project.
 
-> **Status:** Terraform/Bicep implementation is in progress (tracked as [issue #22](https://github.com/aharbii/movie-finder/issues/22)). The current state of this repository is documentation and manual provisioning scripts; automated IaC is not yet complete.
+> **Status:** The Terraform scaffold lives in [`terraform/`](terraform/), but
+> runtime deployment of the backend and frontend still happens from the parent
+> `movie-finder` repository's unified Jenkins pipeline. This repo owns the IaC
+> definitions and the repo-local validation workflow; the parent repo consumes
+> this repo as the `infrastructure/` submodule.
 
 ---
 
-## What this repository covers
+## What this repository owns
 
-| Resource                                      | Technology          | Status  |
-| --------------------------------------------- | ------------------- | ------- |
-| Azure Container Apps (backend + frontend)     | Bicep / manual      | Planned |
-| Azure Container Registry                      | Manual provisioning | Live    |
-| Azure Key Vault (runtime secrets)             | Manual provisioning | Live    |
-| Azure Database for PostgreSQL Flexible Server | Manual provisioning | Live    |
-| Networking, RBAC, managed identity            | Bicep / manual      | Planned |
+- Azure networking for the application environment
+- Azure Container Registry (ACR)
+- Azure Key Vault and the secret naming contract
+- Azure Database for PostgreSQL Flexible Server
+- Azure Container Apps environment and app definitions
+- Docker-only local tooling for `terraform fmt`, `terraform validate`, `tflint`,
+  `pre-commit`, and `detect-secrets`
+
+## What this repository does not own
+
+- Building and deploying the runtime images for backend/frontend
+- The unified application release pipeline
+- The MkDocs site in the parent `movie-finder` docs submodule, unless an infra
+  contract actually changes and requires downstream documentation updates
+
+---
+
+## Local workflow
+
+Contributor workflow in this repo is **strictly Docker-only**: all validation
+commands execute through the provided `Makefile`.
+
+### Prerequisites
+
+- Docker 24+ with the Compose plugin
+- GNU Make
+
+### Setup
+
+```bash
+make init
+make editor-up
+```
+
+`make init` builds the local tooling image and installs a git pre-commit hook
+that delegates to `make pre-commit`.
+
+`make editor-up` starts the long-lived `infra` container used for VS Code attach
+and repeated `docker compose exec` flows.
+
+### Common commands
+
+```bash
+make fmt           # terraform fmt -recursive
+make validate      # terraform init -backend=false + terraform validate
+make tflint        # tflint --init + tflint --format compact
+make pre-commit    # full local hook suite
+make check         # fmt-check + validate + tflint
+make shell         # bash shell in the tooling container
+make editor-down   # stop the local tooling container
+```
+
+### VS Code
+
+The committed `.vscode/` config assumes this flow:
+
+1. Run `make editor-up` from this repo root.
+2. Use `Dev Containers: Attach to Running Container...`.
+3. Attach to the `infra` service container started from this repo.
+4. Use the committed tasks for `make ...` targets.
 
 ---
 
 ## Secrets architecture
 
-Production secrets live in **Azure Key Vault** and are injected into Container Apps at
-runtime via managed identity. They are never stored in environment files, Docker images,
-or Jenkins build logs.
+Production and staging secrets live in **Azure Key Vault** and are injected into
+runtime services through managed identity. They are never committed to source,
+written into Terraform variable files in git, or baked into Docker images.
 
-The authoritative secret naming convention and cross-repo environment variable contract
-is documented in [`docs/qdrant-secret-model.md`](docs/qdrant-secret-model.md).
+CI-time credentials live in **Jenkins credentials** and remain separate from the
+runtime Key Vault model.
 
-| Secret type                        | Location                                   |
-| ---------------------------------- | ------------------------------------------ |
-| Anthropic, OpenAI, Qdrant API keys | Azure Key Vault                            |
-| Database password, JWT signing key | Azure Key Vault                            |
-| CI-time credentials (tests)        | Jenkins credentials store                  |
-| Docker registry login              | ACR managed identity (automatic)           |
-| Key Vault access                   | Container App managed identity (automatic) |
+The authoritative naming contract is documented in
+[`docs/qdrant-secret-model.md`](docs/qdrant-secret-model.md).
 
 ---
 
-## Initial provisioning
+## Terraform layout
 
-Until the IaC automation is complete, follow the step-by-step manual provisioning guide
-in [`docs/devops/setup.md`](../docs/devops/setup.md) (in the `docs/` submodule).
-
-That guide covers:
-
-- Azure resource group and Container Registry setup
-- Azure Database for PostgreSQL Flexible Server
-- Azure Key Vault with managed identity bindings
-- Azure Container Apps deployment
-- Jenkins setup and credential configuration
-
----
-
-## Repository structure
-
-```
+```text
 infrastructure/
-├── docs/
-│   └── qdrant-secret-model.md   Cross-repo secret naming convention (authoritative)
-└── CHANGELOG.md
+├── Dockerfile
+├── docker-compose.yml
+├── Makefile
+├── terraform/
+│   ├── main.tf
+│   ├── providers.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── environments/
+│   │   ├── staging.tfvars
+│   │   └── production.tfvars
+│   ├── modules/
+│   │   ├── container_apps/
+│   │   ├── container_registry/
+│   │   ├── database/
+│   │   ├── key_vault/
+│   │   └── networking/
+│   └── scripts/
+│       └── bootstrap-state.sh
+└── docs/
+    └── qdrant-secret-model.md
 ```
+
+---
+
+## Delivery model
+
+- This repo defines the desired Azure infrastructure state.
+- The parent `movie-finder` repo owns the unified Jenkins pipeline that deploys
+  backend and frontend together.
+- Until Terraform fully replaces the remaining operator runbook steps, the
+  parent docs repo remains the place for procedural setup guidance.

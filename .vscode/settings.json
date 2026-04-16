@@ -1,33 +1,36 @@
 {
-  // ── IaC formatting ───────────────────────────────────────────────────────
-  // Uncomment the relevant formatter once IaC tooling is chosen (issue #22).
+  // Host commands go through `make ...` tasks.
+  // Terraform-powered editor features assume VS Code is attached to the
+  // running `infra` container after `make editor-up`.
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true
+  },
 
-  // Terraform / OpenTofu:
-  // "[terraform]": {
-  //   "editor.defaultFormatter": "hashicorp.terraform",
-  //   "editor.formatOnSave": true
-  // },
-
-  // Bicep:
-  // "[bicep]": {
-  //   "editor.defaultFormatter": "ms-azuretools.vscode-bicep",
-  //   "editor.formatOnSave": true
-  // },
-
-  // ── Editor ────────────────────────────────────────────────────────────────
-  "editor.rulers": [120],
-  "editor.tabSize": 2,
-
-  // ── YAML (docker-compose, pipeline configs) ───────────────────────────────
+  // ── YAML (docker-compose, workflow configs) ──────────────────────────────
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",
     "editor.formatOnSave": true
   },
 
-  // ── File explorer ─────────────────────────────────────────────────────────
+  // ── Editor ergonomics ────────────────────────────────────────────────────
+  "editor.rulers": [100],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // ── File explorer ────────────────────────────────────────────────────────
   "files.exclude": {
     "**/.terraform": true,
+    "**/.tflint.d": true,
     "**/*.tfstate": true,
     "**/*.tfstate.backup": true
-  }
+  },
+
+  // ── Remote Development ───────────────────────────────────────────────────
+  "remote.containers.copyGitConfig": true,
+  "remote.containers.installExtensions": true
 }

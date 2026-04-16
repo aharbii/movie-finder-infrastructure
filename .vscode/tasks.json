@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "infra: init",
+      "type": "shell",
+      "command": "make init",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "infra: up",
+      "type": "shell",
+      "command": "make up",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "infra: down",
+      "type": "shell",
+      "command": "make down",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "infra: logs",
+      "type": "shell",
+      "command": "make logs",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "infra: shell",
+      "type": "shell",
+      "command": "make shell",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "infra: fmt",
+      "type": "shell",
+      "command": "make fmt",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "infra: validate",
+      "type": "shell",
+      "command": "make validate",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "infra: tflint",
+      "type": "shell",
+      "command": "make tflint",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "infra: pre-commit",
+      "type": "shell",
+      "command": "make pre-commit",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "infra: verify",
+      "type": "shell",
+      "command": "make check",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

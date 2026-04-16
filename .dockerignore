@@ -1,0 +1,10 @@
+# =============================================================================
+# infrastructure/.dockerignore — controls what is sent as the Docker build
+# context for the local tooling image.
+#
+# The Dockerfile only installs Terraform tooling and does not COPY repository
+# sources, so keep the build context as small as possible.
+# =============================================================================
+
+*
+!Dockerfile
