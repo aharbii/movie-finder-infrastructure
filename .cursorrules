@@ -1,0 +1,23 @@
+# Movie Finder Infrastructure — Cursor Rules
+
+This file is a legacy fallback. Cursor loads the richer MDC rules from `.cursor/rules/` automatically.
+
+If your IDE supports MDC rules, the following files apply:
+- `.cursor/rules/project.mdc` — always active (infrastructure context, Docker-only workflow)
+- `.cursor/rules/architect.mdc` — activates on `**/*.tf`, `**/*.bicep`, `**/*.puml`, `**/*.dsl`
+- `.cursor/rules/developer.mdc` — activates when implementing IaC changes
+
+---
+
+## Quick reference
+
+**Repo:** `aharbii/movie-finder-infrastructure` · Primary context: `CLAUDE.md`
+
+**Non-negotiables:**
+- All local work runs Docker-only (`make shell`, `make check`) — never run `terraform` directly on host
+- Never commit secrets or `.env` files — new secrets go to Azure Key Vault manually
+- Never bake secrets into Docker images or pass them through CI logs
+- Terraform changes must be idempotent
+- `make check` (fmt-check + validate + tflint) must pass before any PR
+- Conventional Commits: `chore(infra): summary`
+- Disclose AI tool + model in every PR

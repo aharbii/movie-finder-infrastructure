@@ -1,0 +1,45 @@
+---
+description: Movie Finder — infrastructure submodule context. Always active.
+alwaysApply: true
+---
+
+# infrastructure — Azure IaC
+
+This is `movie-finder-infrastructure` (`infrastructure/`) — Azure provisioning for Movie Finder.
+GitHub repo: `aharbii/movie-finder-infrastructure` · Tracker: `aharbii/movie-finder`
+
+## What this submodule does
+
+Infrastructure as Code for Movie Finder on Azure: Container Apps, Container Registry, PostgreSQL, Key Vault, networking.
+
+```
+terraform/         # Terraform modules (issue #22 — in progress)
+docs/              # Deployment guides and runbooks
+```
+
+## Target Azure topology
+
+- **Azure Container Apps** — backend (FastAPI) + frontend (nginx)
+- **Azure Container Registry** — built images pushed by Jenkins CI/CD
+- **Azure Database for PostgreSQL Flexible Server** — production DB
+- **Azure Key Vault** — all secrets (never in code or Jenkins logs)
+- **Managed Identity** — Key Vault access from Container Apps (no explicit credentials)
+
+## CI/CD pipeline modes
+
+| Mode         | Trigger         | Stages                                                              |
+|--------------|-----------------|---------------------------------------------------------------------|
+| CONTRIBUTION | Feature branch  | Lint · Test                                                         |
+| INTEGRATION  | Push to `main`  | Lint · Test · Build Docker · Push `:sha8` + `:latest` → ACR        |
+| RELEASE      | `v*` tag        | Lint · Test · Build · Push `:v1.2.3` → ACR · Production (manual)   |
+
+## Non-negotiables
+
+- Never put secrets in Terraform state — use Key Vault + managed identity
+- Never bake secrets into Docker images
+- Never pass secrets through Jenkins build logs
+- Update `10-deployment-azure.puml` in `docs/` for any topology change
+
+## Personas available
+
+`/architect` is primary here (infra design, topology decisions). `/developer` for Terraform implementation.

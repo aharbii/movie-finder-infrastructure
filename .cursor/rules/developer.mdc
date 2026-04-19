@@ -1,0 +1,36 @@
+---
+description: Developer workflow for the infrastructure submodule. Activate when implementing IaC changes, CI/CD pipeline updates, or Azure provisioning.
+alwaysApply: false
+---
+
+# Developer — infrastructure
+
+## Workflow
+
+1. `gh issue view <N> --repo aharbii/movie-finder-infrastructure`
+2. Find `## Agent Briefing` — if missing, stop. ADR must exist for new Azure topology
+3. Read only the files listed in the briefing
+4. Create branch from `main`
+5. Implement, validate with `terraform plan` or `bicep build`
+6. Commit → PR in `aharbii/movie-finder-infrastructure`
+
+## Security invariants — non-negotiable
+
+- All production secrets in Azure Key Vault — never in Terraform state or CI logs
+- Managed Identity for Key Vault access — no service principal keys in pipelines
+- `detect-secrets` pre-commit enforced — never `--no-verify`
+
+## Pipeline modes
+
+| Mode | Trigger | Stages |
+|------|---------|--------|
+| CONTRIBUTION | Feature branch / PR | Lint · Validate |
+| INTEGRATION | Push to main | Lint · Validate · Plan |
+| RELEASE | v* tag | Lint · Validate · Plan · Apply (manual approval) |
+
+## After PR merges
+
+```bash
+git add infrastructure
+git commit -m "chore(infrastructure): bump to latest main"
+```
