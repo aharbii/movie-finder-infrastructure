@@ -22,10 +22,10 @@ that only query the vector store must never hold a key that can write to it.
 
 ### Tier definitions
 
-| Tier                   | Who uses it                          | Capability                                           |
-| ---------------------- | ------------------------------------ | ---------------------------------------------------- |
-| **Read-only (RO)**     | `backend/app/`, `backend/chain/`     | Query (search, retrieve) only — no upsert, no delete |
-| **Write-capable (RW)** | `backend/rag_ingestion/` exclusively | Upsert and delete — full collection management       |
+| Tier                   | Who uses it                      | Capability                                           |
+| ---------------------- | -------------------------------- | ---------------------------------------------------- |
+| **Read-only (RO)**     | `backend/app/`, `backend/chain/` | Query (search, retrieve) only — no upsert, no delete |
+| **Write-capable (RW)** | `rag/` exclusively               | Upsert and delete — full collection management       |
 
 ### Environment variable names
 
@@ -56,7 +56,7 @@ that only query the vector store must never hold a key that can write to it.
 
 The deployed Azure Container Apps are `backend-app` (FastAPI) and `frontend-app` (nginx).
 `backend/chain/` is a library bundled into `backend-app` and is not a separate Container App.
-`backend/rag_ingestion/` is an **offline CI pipeline** — it runs as a Jenkins job and is
+`rag/` is an **offline CI pipeline** — it runs as a Jenkins job and is
 never deployed as an Azure Container App.
 
 This document covers secrets for `backend-app` only. The `frontend-app` Container App
@@ -121,21 +121,21 @@ declare all variables it consumes, even if the value is injected at runtime.
 suite fully mocks all external dependencies (Qdrant, OpenAI, Anthropic) and does not
 make real API calls. At runtime, env vars are inherited from the hosting `app/` process.
 
-| Variable                 | backend/app |  backend/chain  | backend/rag_ingestion | frontend |
-| ------------------------ | :---------: | :-------------: | :-------------------: | :------: |
-| `QDRANT_URL`             |      ✓      |     ✓ (dev)     |           ✓           |    —     |
-| `QDRANT_API_KEY_RO`      |      ✓      |     ✓ (dev)     |           —           |    —     |
-| `QDRANT_API_KEY_RW`      |      —      |        —        |           ✓           |    —     |
-| `QDRANT_COLLECTION_NAME` |      ✓      |     ✓ (dev)     |           ✓           |    —     |
-| `OPENAI_API_KEY`         |      —      |     ✓ (dev)     |           ✓           |    —     |
-| `ANTHROPIC_API_KEY`      |      —      |     ✓ (dev)     |           —           |    —     |
-| `APP_SECRET_KEY`         |      ✓      |        —        |           —           |    —     |
-| `DATABASE_URL`           |      ✓      |        —        |           —           |    —     |
-| `KAGGLE_API_TOKEN`       |      —      |        —        |           ✓           |    —     |
-| `LANGSMITH_API_KEY`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
-| `LANGSMITH_TRACING`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
-| `LANGSMITH_ENDPOINT`     | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
-| `LANGSMITH_PROJECT`      | ✓ (opt-in)  | ✓ (opt-in, dev) |           —           |    —     |
+| Variable                 | backend/app |  backend/chain  | rag | frontend |
+| ------------------------ | :---------: | :-------------: | :-: | :------: |
+| `QDRANT_URL`             |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `QDRANT_API_KEY_RO`      |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `QDRANT_API_KEY_RW`      |      —      |        —        |  ✓  |    —     |
+| `QDRANT_COLLECTION_NAME` |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `OPENAI_API_KEY`         |      —      |     ✓ (dev)     |  ✓  |    —     |
+| `ANTHROPIC_API_KEY`      |      —      |     ✓ (dev)     |  —  |    —     |
+| `APP_SECRET_KEY`         |      ✓      |        —        |  —  |    —     |
+| `DATABASE_URL`           |      ✓      |        —        |  —  |    —     |
+| `KAGGLE_API_TOKEN`       |      —      |        —        |  ✓  |    —     |
+| `LANGSMITH_API_KEY`      | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `LANGSMITH_TRACING`      | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `LANGSMITH_ENDPOINT`     | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `LANGSMITH_PROJECT`      | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
 
 Backend runtime also uses non-secret app settings that are not stored in Key Vault:
 `CORS_ORIGINS`, `GLOBAL_RATE_LIMIT`, `AUTH_RATE_LIMIT`, `CHAT_RATE_LIMIT`, and
