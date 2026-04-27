@@ -1,11 +1,12 @@
-# Qdrant Secret Model and CI Secret Naming Convention
+# Vector Store Secret Model and CI Secret Naming Convention
 
 **Status:** Accepted
 **Workstream:** Docker-only local dev standardization ([movie-finder#35](https://github.com/aharbii/movie-finder/issues/35))
 **Infrastructure issue:** [movie-finder-infrastructure#8](https://github.com/aharbii/movie-finder-infrastructure/issues/8)
 
-This document is the authoritative reference for how Qdrant credentials and other
-cross-repo secrets are named, scoped, and injected across the Movie Finder project.
+This document is the authoritative reference for how vector-store credentials, LLM
+provider keys, and other cross-repo secrets are named, scoped, and injected across
+the Movie Finder project.
 All repos in workstream #35 must use the names defined here.
 
 ---
@@ -34,7 +35,8 @@ that only query the vector store must never hold a key that can write to it.
 | `QDRANT_URL`             | Both    | Qdrant Cloud cluster URL (same endpoint for both tiers)  |
 | `QDRANT_API_KEY_RO`      | RO only | Read-only API key — injected into app and chain          |
 | `QDRANT_API_KEY_RW`      | RW only | Write-capable API key — injected into rag_ingestion only |
-| `QDRANT_COLLECTION_NAME` | Both    | Target collection name (may vary per environment)        |
+| `VECTOR_COLLECTION_PREFIX` | Both  | Dynamic collection/table/namespace prefix                |
+| `QDRANT_COLLECTION_PREFIX` | Both  | Backward-compatible alias for Qdrant deployments         |
 
 > **Migration note:** The legacy `QDRANT_API_KEY` variable (single key, no suffix) is
 > superseded by `QDRANT_API_KEY_RO` and `QDRANT_API_KEY_RW`. Any repo still referencing
@@ -44,9 +46,9 @@ that only query the vector store must never hold a key that can write to it.
 
 | Repo                                          | Variable used                                               | Tier                                          |
 | --------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
-| `aharbii/movie-finder-backend` (`app/`)       | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO                                            |
-| `aharbii/movie-finder-chain`                  | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `QDRANT_COLLECTION_NAME` | RO (dev/CI only — library consumed by `app/`) |
-| `aharbii/movie-finder-rag` (`rag_ingestion/`) | `QDRANT_URL`, `QDRANT_API_KEY_RW`, `QDRANT_COLLECTION_NAME` | RW                                            |
+| `aharbii/movie-finder-backend` (`app/`)       | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `VECTOR_COLLECTION_PREFIX` | RO                                            |
+| `aharbii/movie-finder-chain`                  | `QDRANT_URL`, `QDRANT_API_KEY_RO`, `VECTOR_COLLECTION_PREFIX` | RO (dev/CI only — library consumed by `app/`) |
+| `aharbii/movie-finder-rag` (`rag_ingestion/`) | `QDRANT_URL`, `QDRANT_API_KEY_RW`, `VECTOR_COLLECTION_PREFIX` | RW                                            |
 
 ---
 
@@ -70,9 +72,12 @@ environment variables baked into Docker images or injected through Jenkins build
 | ---------------------------- | --------------------------- | ------------- |
 | Qdrant cluster URL           | `qdrant-url`                | backend-app   |
 | Qdrant read-only API key     | `qdrant-api-key-ro`         | backend-app   |
-| Qdrant collection name       | `qdrant-collection-name`    | backend-app   |
 | OpenAI API key               | `openai-api-key`            | backend-app   |
 | Anthropic API key            | `anthropic-api-key`         | backend-app   |
+| Groq API key _(opt-in)_      | `groq-api-key`              | backend-app   |
+| Together API key _(opt-in)_  | `together-api-key`          | backend-app   |
+| Google API key _(opt-in)_    | `google-api-key`            | backend-app   |
+| Pinecone API key _(opt-in)_  | `pinecone-api-key`          | backend-app   |
 | JWT signing key              | `app-secret-key`            | backend-app   |
 | PostgreSQL URL               | `postgres-url`              | backend-app   |
 | LangSmith API key _(opt-in)_ | `langsmith-api-key`         | backend-app   |
@@ -90,14 +95,15 @@ be added manually via the Jenkins UI.
 | ------------------------ | ------------------------ | ---------------------------- |
 | `qdrant-url`             | `QDRANT_URL`             | backend-app, chain pipelines |
 | `qdrant-api-key-ro`      | `QDRANT_API_KEY_RO`      | backend-app, chain pipelines |
-| `qdrant-collection-name` | `QDRANT_COLLECTION_NAME` | backend-app, chain pipelines |
+| `vector-collection-prefix` | `VECTOR_COLLECTION_PREFIX` | backend-app, chain pipelines |
 
 > **Secrets not needed in current CI:**
 >
 > - `APP_SECRET_KEY` and `DATABASE_URL` — the app test suite hard-codes a test JWT secret
 >   and connects to a local Postgres sidecar (`postgres:postgres`). Neither production
 >   secret is needed in CI.
-> - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `KAGGLE_API_TOKEN`, `qdrant-api-key-rw` — Jenkins
+> - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`, `TOGETHER_API_KEY`,
+>   `GOOGLE_API_KEY`, `PINECONE_API_KEY`, `KAGGLE_API_TOKEN`, `qdrant-api-key-rw` — Jenkins
 >   currently runs tests with stubs only; no real LLM calls or dataset downloads are made.
 >   The RAG ingestion CI job is future work tracked in
 >   [rag#6](https://github.com/aharbii/movie-finder-rag/issues/6). These credentials will
@@ -121,21 +127,33 @@ declare all variables it consumes, even if the value is injected at runtime.
 suite fully mocks all external dependencies (Qdrant, OpenAI, Anthropic) and does not
 make real API calls. At runtime, env vars are inherited from the hosting `app/` process.
 
-| Variable                 | backend/app |  backend/chain  | rag | frontend |
-| ------------------------ | :---------: | :-------------: | :-: | :------: |
-| `QDRANT_URL`             |      ✓      |     ✓ (dev)     |  ✓  |    —     |
-| `QDRANT_API_KEY_RO`      |      ✓      |     ✓ (dev)     |  —  |    —     |
-| `QDRANT_API_KEY_RW`      |      —      |        —        |  ✓  |    —     |
-| `QDRANT_COLLECTION_NAME` |      ✓      |     ✓ (dev)     |  ✓  |    —     |
-| `OPENAI_API_KEY`         |      —      |     ✓ (dev)     |  ✓  |    —     |
-| `ANTHROPIC_API_KEY`      |      —      |     ✓ (dev)     |  —  |    —     |
-| `APP_SECRET_KEY`         |      ✓      |        —        |  —  |    —     |
-| `DATABASE_URL`           |      ✓      |        —        |  —  |    —     |
-| `KAGGLE_API_TOKEN`       |      —      |        —        |  ✓  |    —     |
-| `LANGSMITH_API_KEY`      | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
-| `LANGSMITH_TRACING`      | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
-| `LANGSMITH_ENDPOINT`     | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
-| `LANGSMITH_PROJECT`      | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| Variable                     | backend/app |  backend/chain  | rag | frontend |
+| ---------------------------- | :---------: | :-------------: | :-: | :------: |
+| `CLASSIFIER_PROVIDER`        |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `CLASSIFIER_MODEL`           |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `REASONING_PROVIDER`         |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `REASONING_MODEL`            |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `EMBEDDING_PROVIDER`         |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `EMBEDDING_MODEL`            |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `EMBEDDING_DIMENSION`        |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `VECTOR_STORE`               |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `VECTOR_COLLECTION_PREFIX`   |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `QDRANT_URL`                 |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `QDRANT_API_KEY_RO`          |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `QDRANT_API_KEY_RW`          |      —      |        —        |  ✓  |    —     |
+| `OPENAI_API_KEY`             |      ✓      |     ✓ (dev)     |  ✓  |    —     |
+| `ANTHROPIC_API_KEY`          |      ✓      |     ✓ (dev)     |  —  |    —     |
+| `GROQ_API_KEY`               | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `TOGETHER_API_KEY`           | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `GOOGLE_API_KEY`             | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `PINECONE_API_KEY`           | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `APP_SECRET_KEY`             |      ✓      |        —        |  —  |    —     |
+| `DATABASE_URL`               |      ✓      |        —        |  —  |    —     |
+| `KAGGLE_API_TOKEN`           |      —      |        —        |  ✓  |    —     |
+| `LANGSMITH_API_KEY`          | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `LANGSMITH_TRACING`          | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `LANGSMITH_ENDPOINT`         | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
+| `LANGSMITH_PROJECT`          | ✓ (opt-in)  | ✓ (opt-in, dev) |  —  |    —     |
 
 Backend runtime also uses non-secret app settings that are not stored in Key Vault:
 `CORS_ORIGINS`, `GLOBAL_RATE_LIMIT`, `AUTH_RATE_LIMIT`, `CHAT_RATE_LIMIT`, and

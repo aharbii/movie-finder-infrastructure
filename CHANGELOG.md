@@ -10,6 +10,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Terraform variables and Container App environment wiring for ADR 0008 chain
+  runtime selection: classifier/reasoning providers and models, embedding provider
+  and dimension, vector-store provider, dynamic collection prefix, and optional
+  Ollama/ChromaDB/Pinecone/pgvector settings
+- Azure Key Vault secret slots for optional cloud providers: Groq, Together,
+  Google, and Pinecone
 - `docs/qdrant-secret-model.md` — authoritative reference for the Qdrant RO/RW access
   tier model, Azure Key Vault secret names, Jenkins credential IDs, and the full
   cross-repo environment variable contract for workstream #35
@@ -42,6 +48,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Secret-model documentation now covers the provider/vector-store runtime contract
+  beyond Qdrant-only deployments
 - `README.md`, `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `.github/copilot-instructions.md`,
   `.junie/guidelines.md`, and `ai-context/*` — refreshed to describe the Docker-only local
   tooling contract, attached-container VS Code workflow, and the parent-repo Jenkins

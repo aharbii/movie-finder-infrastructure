@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "azure": {
+      "args": [
+        "-y",
+        "@azure/mcp@latest",
+        "server",
+        "start"
+      ],
+      "command": "npx"
+    },
+    "github": {
+      "args": [
+        "-c",
+        "GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) npx -y @modelcontextprotocol/server-github"
+      ],
+      "command": "sh"
+    },
+    "jenkins-local": {
+      "args": [
+        "-c",
+        ". ~/.zshenv && exec npx -y @kud/mcp-jenkins@latest"
+      ],
+      "command": "sh"
+    }
+  }
+}

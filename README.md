@@ -85,7 +85,7 @@ written into Terraform variable files in git, or baked into Docker images.
 CI-time credentials live in **Jenkins credentials** and remain separate from the
 runtime Key Vault model.
 
-The authoritative naming contract is documented in
+The authoritative naming contract for vector-store and provider secrets is documented in
 [`docs/qdrant-secret-model.md`](docs/qdrant-secret-model.md).
 
 ---

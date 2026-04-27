@@ -77,6 +77,10 @@ module "key_vault" {
     app-secret-key    = var.app_secret_key
     openai-api-key    = var.openai_api_key
     anthropic-api-key = var.anthropic_api_key
+    groq-api-key      = var.groq_api_key
+    together-api-key  = var.together_api_key
+    google-api-key    = var.google_api_key
+    pinecone-api-key  = var.pinecone_api_key
     qdrant-url        = var.qdrant_url
     qdrant-api-key-ro = var.qdrant_api_key_ro
     langsmith-api-key = var.langsmith_api_key
@@ -129,5 +133,21 @@ module "container_apps" {
   frontend_min_replicas    = var.frontend_min_replicas
   frontend_max_replicas    = var.frontend_max_replicas
   database_url             = module.database.connection_string
+  classifier_provider      = var.classifier_provider
+  classifier_model         = var.classifier_model
+  reasoning_provider       = var.reasoning_provider
+  reasoning_model          = var.reasoning_model
+  embedding_provider       = var.embedding_provider
+  embedding_model          = var.embedding_model
+  embedding_dimension      = var.embedding_dimension
+  vector_store             = var.vector_store
+  vector_collection_prefix = var.vector_collection_prefix
+  ollama_base_url          = var.ollama_base_url
+  chromadb_persist_path    = var.chromadb_persist_path
+  pinecone_index_name      = var.pinecone_index_name
+  pinecone_index_host      = var.pinecone_index_host
+  pinecone_cloud           = var.pinecone_cloud
+  pinecone_region          = var.pinecone_region
+  pgvector_schema          = var.pgvector_schema
   tags                     = local.default_tags
 }

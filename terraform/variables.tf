@@ -165,6 +165,34 @@ variable "anthropic_api_key" {
   sensitive   = true
 }
 
+variable "groq_api_key" {
+  type        = string
+  description = "Groq API key for Groq-hosted chat models."
+  sensitive   = true
+  default     = ""
+}
+
+variable "together_api_key" {
+  type        = string
+  description = "Together API key for OpenAI-compatible chat models."
+  sensitive   = true
+  default     = ""
+}
+
+variable "google_api_key" {
+  type        = string
+  description = "Google API key for Gemini chat or embedding models."
+  sensitive   = true
+  default     = ""
+}
+
+variable "pinecone_api_key" {
+  type        = string
+  description = "Pinecone API key when VECTOR_STORE=pinecone."
+  sensitive   = true
+  default     = ""
+}
+
 variable "qdrant_url" {
   type        = string
   description = "Qdrant Cloud endpoint URL."
@@ -182,4 +210,100 @@ variable "langsmith_api_key" {
   description = "LangSmith API key (optional — leave empty to disable tracing)."
   sensitive   = true
   default     = ""
+}
+
+variable "classifier_provider" {
+  type        = string
+  description = "Classifier and confirmation chat provider."
+  default     = "anthropic"
+}
+
+variable "classifier_model" {
+  type        = string
+  description = "Classifier model."
+  default     = "claude-haiku-4-5-20251001"
+}
+
+variable "reasoning_provider" {
+  type        = string
+  description = "Reasoning and Q&A chat provider."
+  default     = "anthropic"
+}
+
+variable "reasoning_model" {
+  type        = string
+  description = "Reasoning and Q&A model."
+  default     = "claude-sonnet-4-6"
+}
+
+variable "embedding_provider" {
+  type        = string
+  description = "Query embedding provider."
+  default     = "openai"
+}
+
+variable "embedding_model" {
+  type        = string
+  description = "Query embedding model."
+  default     = "text-embedding-3-large"
+}
+
+variable "embedding_dimension" {
+  type        = number
+  description = "Query embedding dimension; must match RAG ingestion."
+  default     = 3072
+}
+
+variable "vector_store" {
+  type        = string
+  description = "Query-time vector store provider."
+  default     = "qdrant"
+}
+
+variable "vector_collection_prefix" {
+  type        = string
+  description = "Dynamic vector target prefix. Final target is prefix_model_dimension."
+  default     = "movies"
+}
+
+variable "ollama_base_url" {
+  type        = string
+  description = "Ollama base URL when an Ollama provider is selected."
+  default     = "http://localhost:11434"
+}
+
+variable "chromadb_persist_path" {
+  type        = string
+  description = "ChromaDB persistence path when VECTOR_STORE=chromadb."
+  default     = "outputs/chromadb/local"
+}
+
+variable "pinecone_index_name" {
+  type        = string
+  description = "Pinecone index name when VECTOR_STORE=pinecone."
+  default     = "movie-finder-rag"
+}
+
+variable "pinecone_index_host" {
+  type        = string
+  description = "Optional Pinecone index host."
+  default     = ""
+}
+
+variable "pinecone_cloud" {
+  type        = string
+  description = "Pinecone serverless cloud."
+  default     = "aws"
+}
+
+variable "pinecone_region" {
+  type        = string
+  description = "Pinecone serverless region."
+  default     = "us-east-1"
+}
+
+variable "pgvector_schema" {
+  type        = string
+  description = "PostgreSQL schema token for pgvector targets."
+  default     = "public"
 }

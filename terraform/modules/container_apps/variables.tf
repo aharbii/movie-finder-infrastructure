@@ -35,4 +35,20 @@ variable "database_url" {
   type      = string
   sensitive = true
 }
+variable "classifier_provider" { type = string }
+variable "classifier_model" { type = string }
+variable "reasoning_provider" { type = string }
+variable "reasoning_model" { type = string }
+variable "embedding_provider" { type = string }
+variable "embedding_model" { type = string }
+variable "embedding_dimension" { type = number }
+variable "vector_store" { type = string }
+variable "vector_collection_prefix" { type = string }
+variable "ollama_base_url" { type = string }
+variable "chromadb_persist_path" { type = string }
+variable "pinecone_index_name" { type = string }
+variable "pinecone_index_host" { type = string }
+variable "pinecone_cloud" { type = string }
+variable "pinecone_region" { type = string }
+variable "pgvector_schema" { type = string }
 variable "tags" { type = map(string) }

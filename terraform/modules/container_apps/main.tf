@@ -55,7 +55,7 @@ resource "azurerm_container_app" "backend" {
   registry {
     server               = var.acr_login_server
     username             = var.acr_admin_username
-    password_secret_name = "acr-password" # pragma: allowlist secret
+    password_secret_name = "acr-password"
   }
 
   secret {
@@ -83,7 +83,107 @@ resource "azurerm_container_app" "backend" {
       }
       env {
         name        = "APP_SECRET_KEY"
-        secret_name = "app-secret-key" # pragma: allowlist secret
+        secret_name = "app-secret-key"
+      }
+      env {
+        name  = "CLASSIFIER_PROVIDER"
+        value = var.classifier_provider
+      }
+      env {
+        name  = "CLASSIFIER_MODEL"
+        value = var.classifier_model
+      }
+      env {
+        name  = "REASONING_PROVIDER"
+        value = var.reasoning_provider
+      }
+      env {
+        name  = "REASONING_MODEL"
+        value = var.reasoning_model
+      }
+      env {
+        name  = "EMBEDDING_PROVIDER"
+        value = var.embedding_provider
+      }
+      env {
+        name  = "EMBEDDING_MODEL"
+        value = var.embedding_model
+      }
+      env {
+        name  = "EMBEDDING_DIMENSION"
+        value = tostring(var.embedding_dimension)
+      }
+      env {
+        name  = "VECTOR_STORE"
+        value = var.vector_store
+      }
+      env {
+        name  = "VECTOR_COLLECTION_PREFIX"
+        value = var.vector_collection_prefix
+      }
+      env {
+        name  = "QDRANT_COLLECTION_PREFIX"
+        value = var.vector_collection_prefix
+      }
+      env {
+        name  = "OLLAMA_BASE_URL"
+        value = var.ollama_base_url
+      }
+      env {
+        name  = "CHROMADB_PERSIST_PATH"
+        value = var.chromadb_persist_path
+      }
+      env {
+        name  = "PINECONE_INDEX_NAME"
+        value = var.pinecone_index_name
+      }
+      env {
+        name  = "PINECONE_INDEX_HOST"
+        value = var.pinecone_index_host
+      }
+      env {
+        name  = "PINECONE_CLOUD"
+        value = var.pinecone_cloud
+      }
+      env {
+        name  = "PINECONE_REGION"
+        value = var.pinecone_region
+      }
+      env {
+        name  = "PGVECTOR_SCHEMA"
+        value = var.pgvector_schema
+      }
+      env {
+        name        = "ANTHROPIC_API_KEY"
+        secret_name = "anthropic-api-key"
+      }
+      env {
+        name        = "OPENAI_API_KEY"
+        secret_name = "openai-api-key"
+      }
+      env {
+        name        = "GROQ_API_KEY"
+        secret_name = "groq-api-key"
+      }
+      env {
+        name        = "TOGETHER_API_KEY"
+        secret_name = "together-api-key"
+      }
+      env {
+        name        = "GOOGLE_API_KEY"
+        secret_name = "google-api-key"
+      }
+      env {
+        name        = "QDRANT_URL"
+        secret_name = "qdrant-url"
+      }
+      env {
+        name        = "QDRANT_API_KEY_RO"
+        secret_name = "qdrant-api-key-ro"
+      }
+      env {
+        name        = "PINECONE_API_KEY"
+        secret_name = "pinecone-api-key"
       }
 
       liveness_probe {
@@ -138,7 +238,7 @@ resource "azurerm_container_app" "frontend" {
   registry {
     server               = var.acr_login_server
     username             = var.acr_admin_username
-    password_secret_name = "acr-password" # pragma: allowlist secret
+    password_secret_name = "acr-password"
   }
 
   secret {

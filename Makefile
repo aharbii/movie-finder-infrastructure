@@ -25,7 +25,7 @@
 
 COMPOSE ?= docker compose
 SERVICE ?= infra
-GIT_DIR_HOST := $(shell git rev-parse --git-dir)
+GIT_DIR_HOST := $(abspath $(shell git rev-parse --git-dir))
 GIT_HOOKS_DIR := $(GIT_DIR_HOST)/hooks
 
 # Export so docker compose picks it up automatically (avoids per-command prefix).
