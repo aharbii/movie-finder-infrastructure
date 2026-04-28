@@ -105,7 +105,7 @@ If you modify `.vscode/`, also update `AGENTS.md`, `GEMINI.md`, and
 - Never bake secrets into Docker images
 - Never pass secrets through CI logs
 - Rotate runtime secrets in Key Vault, not through git
-- See `docs/qdrant-secret-model.md` for the authoritative secret-name contract
+- See `docs/provider-runtime-contract.md` for the authoritative provider, vector-store, secret-name, and env-var contract
 
 When adding a new secret:
 

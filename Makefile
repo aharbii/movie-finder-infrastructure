@@ -19,7 +19,7 @@
 
 .PHONY: help init build setup clean clean-docker \
 	editor-up editor-down ci-down shell logs up down run run-dev \
-	fmt fmt-check validate tflint detect-secrets pre-commit check
+	fmt fmt-check validate tflint plan apply detect-secrets pre-commit check
 
 .DEFAULT_GOAL := help
 
@@ -71,6 +71,8 @@ help:
 	@echo "    fmt-check      Run terraform fmt -check -recursive"
 	@echo "    validate       Run terraform init -backend=false + terraform validate"
 	@echo "    tflint         Run tflint --init + tflint --format compact"
+	@echo "    plan           Run terraform init + terraform plan"
+	@echo "    apply          Run terraform init + terraform apply -auto-approve"
 	@echo "    detect-secrets Run detect-secrets scan"
 	@echo "    pre-commit     Run all pre-commit hooks"
 	@echo "    check          fmt-check + validate + tflint"
@@ -130,6 +132,12 @@ validate:
 
 tflint:
 	$(call exec_in_terraform,tflint --init >/dev/null && tflint --format compact)
+
+plan:
+	$(call exec_in_terraform,terraform init -reconfigure && terraform plan)
+
+apply:
+	$(call exec_in_terraform,terraform init -reconfigure && terraform apply -auto-approve)
 
 detect-secrets:
 	$(call exec_or_run,detect-secrets scan --baseline .secrets.baseline)

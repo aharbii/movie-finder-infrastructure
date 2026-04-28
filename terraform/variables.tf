@@ -155,14 +155,16 @@ variable "app_secret_key" {
 
 variable "openai_api_key" {
   type        = string
-  description = "OpenAI API key for embeddings."
+  description = "OpenAI API key when any selected provider is openai."
   sensitive   = true
+  default     = ""
 }
 
 variable "anthropic_api_key" {
   type        = string
-  description = "Anthropic API key for Claude models."
+  description = "Anthropic API key when any selected chat provider is anthropic."
   sensitive   = true
+  default     = ""
 }
 
 variable "groq_api_key" {
@@ -193,16 +195,32 @@ variable "pinecone_api_key" {
   default     = ""
 }
 
+variable "pgvector_dsn" {
+  type        = string
+  description = "pgvector PostgreSQL DSN when VECTOR_STORE=pgvector."
+  sensitive   = true
+  default     = ""
+}
+
 variable "qdrant_url" {
   type        = string
   description = "Qdrant Cloud endpoint URL."
   sensitive   = true
+  default     = ""
 }
 
 variable "qdrant_api_key_ro" {
   type        = string
   description = "Qdrant read-only API key."
   sensitive   = true
+  default     = ""
+}
+
+variable "qdrant_api_key_rw" {
+  type        = string
+  description = "Qdrant write-capable API key for RAG ingestion pipelines."
+  sensitive   = true
+  default     = ""
 }
 
 variable "langsmith_api_key" {
@@ -210,6 +228,54 @@ variable "langsmith_api_key" {
   description = "LangSmith API key (optional — leave empty to disable tracing)."
   sensitive   = true
   default     = ""
+}
+
+variable "langsmith_tracing" {
+  type        = string
+  description = "LangSmith tracing toggle: true or false."
+  default     = "false"
+}
+
+variable "langsmith_endpoint" {
+  type        = string
+  description = "LangSmith API endpoint."
+  default     = "https://api.smith.langchain.com"
+}
+
+variable "langsmith_project" {
+  type        = string
+  description = "LangSmith project name."
+  default     = "movie-finder"
+}
+
+variable "cors_origins" {
+  type        = string
+  description = "Backend CORS origins as a JSON array string."
+  default     = "[]"
+}
+
+variable "global_rate_limit" {
+  type        = string
+  description = "Backend global SlowAPI fallback rate limit."
+  default     = "100/minute"
+}
+
+variable "auth_rate_limit" {
+  type        = string
+  description = "Backend auth route SlowAPI rate limit."
+  default     = "5/minute"
+}
+
+variable "chat_rate_limit" {
+  type        = string
+  description = "Backend chat route SlowAPI rate limit."
+  default     = "20/minute"
+}
+
+variable "max_message_length" {
+  type        = number
+  description = "Backend maximum accepted chat message length."
+  default     = 2000
 }
 
 variable "classifier_provider" {

@@ -27,7 +27,7 @@ services:
       GIT_WORK_TREE: /workspace
     volumes:
       - .:/workspace
-      - ${INFRASTRUCTURE_GIT_DIR:-../.git/modules/infrastructure}:/workspace/.gitdir
+      - ${INFRASTRUCTURE_GIT_DIR:-.git}:/workspace/.gitdir
       - pre_commit_cache:/root/.cache/pre-commit
       - tflint_cache:/root/.tflint.d
     stdin_open: true

@@ -40,7 +40,7 @@ Contributor workflow in this repo is **Docker-only** from the repo root.
 - **Azure Key Vault** stores runtime secrets.
 - **Jenkins credentials** store CI-only secrets.
 - `rag_ingestion` remains an offline CI pipeline, never an Azure Container App.
-- See `docs/qdrant-secret-model.md` for the authoritative secret-name and env-var contract.
+- See `docs/provider-runtime-contract.md` for the authoritative provider, vector-store, secret-name, and env-var contract.
 - Update downstream `.env.example` files only when the actual secret contract changes.
 
 ---
