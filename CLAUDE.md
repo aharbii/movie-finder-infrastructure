@@ -44,7 +44,7 @@ Current scope:
 | `backend/app/`           | (nested in backend)                   | FastAPI application layer      |
 | `backend/chain/`         | `aharbii/movie-finder-chain`          | LangGraph AI pipeline          |
 | `backend/chain/imdbapi/` | `aharbii/imdbapi-client`              | Async IMDb REST client         |
-| `backend/rag_ingestion/` | `aharbii/movie-finder-rag`            | Offline embedding ingestion    |
+| `rag/`                   | `aharbii/movie-finder-rag`            | Offline embedding ingestion    |
 | `frontend/`              | `aharbii/movie-finder-frontend`       | Angular SPA                    |
 | `docs/`                  | `aharbii/movie-finder-docs`           | MkDocs documentation           |
 | `infrastructure/`        | `aharbii/movie-finder-infrastructure` | **← you are here**             |
@@ -93,11 +93,11 @@ If you modify `.vscode/`, also update `AGENTS.md`, `GEMINI.md`, and
 
 **Where secrets live:**
 
-| Secret type                                  | Location                  | Who manages                      |
-| -------------------------------------------- | ------------------------- | -------------------------------- |
-| Runtime API keys and app secrets             | Azure Key Vault           | User — manually                  |
-| CI build credentials                         | Jenkins credentials store | User — manually                  |
-| Container registry and Key Vault access      | Azure managed identity    | Azure — automatic                |
+| Secret type                             | Location                  | Who manages       |
+| --------------------------------------- | ------------------------- | ----------------- |
+| Runtime API keys and app secrets        | Azure Key Vault           | User — manually   |
+| CI build credentials                    | Jenkins credentials store | User — manually   |
+| Container registry and Key Vault access | Azure managed identity    | Azure — automatic |
 
 **Rules:**
 
@@ -105,7 +105,7 @@ If you modify `.vscode/`, also update `AGENTS.md`, `GEMINI.md`, and
 - Never bake secrets into Docker images
 - Never pass secrets through CI logs
 - Rotate runtime secrets in Key Vault, not through git
-- See `docs/qdrant-secret-model.md` for the authoritative secret-name contract
+- See `docs/provider-runtime-contract.md` for the authoritative provider, vector-store, secret-name, and env-var contract
 
 When adding a new secret:
 
@@ -148,15 +148,15 @@ When adding a new secret:
 
 ## Cross-cutting change checklist
 
-| #   | Category     | Key gate                                                                                              |
-| --- | ------------ | ----------------------------------------------------------------------------------------------------- |
-| 1   | **Issues**   | Parent `aharbii/movie-finder` issue exists; child issue here only if this repo changes               |
-| 2   | **Branch**   | `feature/`, `fix/`, or `chore/` branch in this repo; root repo pointer bump follows after merge      |
-| 3   | **IaC**      | No secrets in source; Terraform validation passes; changes are idempotent                            |
-| 4   | **Secrets**  | New manual Key Vault / Jenkins steps explicitly called out                                            |
-| 5   | **CI**       | GitHub Actions validation still reflects the local `make check` contract                              |
-| 6   | **Docs**     | `CHANGELOG.md` updated; parent docs repo touched only when the infrastructure contract actually needs it |
-| 7   | **Pointer**  | Parent `movie-finder` submodule pointer updated after infra merge or stacked branch refresh           |
+| #   | Category    | Key gate                                                                                                 |
+| --- | ----------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | **Issues**  | Parent `aharbii/movie-finder` issue exists; child issue here only if this repo changes                   |
+| 2   | **Branch**  | `feature/`, `fix/`, or `chore/` branch in this repo; root repo pointer bump follows after merge          |
+| 3   | **IaC**     | No secrets in source; Terraform validation passes; changes are idempotent                                |
+| 4   | **Secrets** | New manual Key Vault / Jenkins steps explicitly called out                                               |
+| 5   | **CI**      | GitHub Actions validation still reflects the local `make check` contract                                 |
+| 6   | **Docs**    | `CHANGELOG.md` updated; parent docs repo touched only when the infrastructure contract actually needs it |
+| 7   | **Pointer** | Parent `movie-finder` submodule pointer updated after infra merge or stacked branch refresh              |
 
 ### Submodule pointer bump
 

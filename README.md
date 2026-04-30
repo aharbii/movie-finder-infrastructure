@@ -74,6 +74,11 @@ The committed `.vscode/` config assumes this flow:
 3. Attach to the `infra` service container started from this repo.
 4. Use the committed tasks for `make ...` targets.
 
+Use the `make ...` targets for Dockerized tooling. They export the absolute Git
+metadata path so both standalone clones and parent-submodule checkouts work. If
+you run `docker compose ...` directly from the parent submodule checkout, set
+`INFRASTRUCTURE_GIT_DIR` to `$(git rev-parse --git-dir)` first.
+
 ---
 
 ## Secrets architecture
@@ -85,8 +90,9 @@ written into Terraform variable files in git, or baked into Docker images.
 CI-time credentials live in **Jenkins credentials** and remain separate from the
 runtime Key Vault model.
 
-The authoritative naming contract is documented in
-[`docs/qdrant-secret-model.md`](docs/qdrant-secret-model.md).
+The authoritative naming contract for providers, vector stores, and runtime
+secrets is documented in
+[`docs/provider-runtime-contract.md`](docs/provider-runtime-contract.md).
 
 ---
 
@@ -114,7 +120,7 @@ infrastructure/
 │   └── scripts/
 │       └── bootstrap-state.sh
 └── docs/
-    └── qdrant-secret-model.md
+    └── provider-runtime-contract.md
 ```
 
 ---

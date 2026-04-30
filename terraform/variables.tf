@@ -155,26 +155,72 @@ variable "app_secret_key" {
 
 variable "openai_api_key" {
   type        = string
-  description = "OpenAI API key for embeddings."
+  description = "OpenAI API key when any selected provider is openai."
   sensitive   = true
+  default     = ""
 }
 
 variable "anthropic_api_key" {
   type        = string
-  description = "Anthropic API key for Claude models."
+  description = "Anthropic API key when any selected chat provider is anthropic."
   sensitive   = true
+  default     = ""
+}
+
+variable "groq_api_key" {
+  type        = string
+  description = "Groq API key for Groq-hosted chat models."
+  sensitive   = true
+  default     = ""
+}
+
+variable "together_api_key" {
+  type        = string
+  description = "Together API key for OpenAI-compatible chat models."
+  sensitive   = true
+  default     = ""
+}
+
+variable "google_api_key" {
+  type        = string
+  description = "Google API key for Gemini chat or embedding models."
+  sensitive   = true
+  default     = ""
+}
+
+variable "pinecone_api_key" {
+  type        = string
+  description = "Pinecone API key when VECTOR_STORE=pinecone."
+  sensitive   = true
+  default     = ""
+}
+
+variable "pgvector_dsn" {
+  type        = string
+  description = "pgvector PostgreSQL DSN when VECTOR_STORE=pgvector."
+  sensitive   = true
+  default     = ""
 }
 
 variable "qdrant_url" {
   type        = string
   description = "Qdrant Cloud endpoint URL."
   sensitive   = true
+  default     = ""
 }
 
 variable "qdrant_api_key_ro" {
   type        = string
   description = "Qdrant read-only API key."
   sensitive   = true
+  default     = ""
+}
+
+variable "qdrant_api_key_rw" {
+  type        = string
+  description = "Qdrant write-capable API key for RAG ingestion pipelines."
+  sensitive   = true
+  default     = ""
 }
 
 variable "langsmith_api_key" {
@@ -182,4 +228,148 @@ variable "langsmith_api_key" {
   description = "LangSmith API key (optional — leave empty to disable tracing)."
   sensitive   = true
   default     = ""
+}
+
+variable "langsmith_tracing" {
+  type        = string
+  description = "LangSmith tracing toggle: true or false."
+  default     = "false"
+}
+
+variable "langsmith_endpoint" {
+  type        = string
+  description = "LangSmith API endpoint."
+  default     = "https://api.smith.langchain.com"
+}
+
+variable "langsmith_project" {
+  type        = string
+  description = "LangSmith project name."
+  default     = "movie-finder"
+}
+
+variable "cors_origins" {
+  type        = string
+  description = "Backend CORS origins as a JSON array string."
+  default     = "[]"
+}
+
+variable "global_rate_limit" {
+  type        = string
+  description = "Backend global SlowAPI fallback rate limit."
+  default     = "100/minute"
+}
+
+variable "auth_rate_limit" {
+  type        = string
+  description = "Backend auth route SlowAPI rate limit."
+  default     = "5/minute"
+}
+
+variable "chat_rate_limit" {
+  type        = string
+  description = "Backend chat route SlowAPI rate limit."
+  default     = "20/minute"
+}
+
+variable "max_message_length" {
+  type        = number
+  description = "Backend maximum accepted chat message length."
+  default     = 2000
+}
+
+variable "classifier_provider" {
+  type        = string
+  description = "Classifier and confirmation chat provider."
+  default     = "anthropic"
+}
+
+variable "classifier_model" {
+  type        = string
+  description = "Classifier model."
+  default     = "claude-haiku-4-5-20251001"
+}
+
+variable "reasoning_provider" {
+  type        = string
+  description = "Reasoning and Q&A chat provider."
+  default     = "anthropic"
+}
+
+variable "reasoning_model" {
+  type        = string
+  description = "Reasoning and Q&A model."
+  default     = "claude-sonnet-4-6"
+}
+
+variable "embedding_provider" {
+  type        = string
+  description = "Query embedding provider."
+  default     = "openai"
+}
+
+variable "embedding_model" {
+  type        = string
+  description = "Query embedding model."
+  default     = "text-embedding-3-large"
+}
+
+variable "embedding_dimension" {
+  type        = number
+  description = "Query embedding dimension; must match RAG ingestion."
+  default     = 3072
+}
+
+variable "vector_store" {
+  type        = string
+  description = "Query-time vector store provider."
+  default     = "qdrant"
+}
+
+variable "vector_collection_prefix" {
+  type        = string
+  description = "Dynamic vector target prefix. Final target is prefix_model_dimension."
+  default     = "movies"
+}
+
+variable "ollama_base_url" {
+  type        = string
+  description = "Ollama base URL when an Ollama provider is selected."
+  default     = "http://localhost:11434"
+}
+
+variable "chromadb_persist_path" {
+  type        = string
+  description = "ChromaDB persistence path when VECTOR_STORE=chromadb."
+  default     = "outputs/chromadb/local"
+}
+
+variable "pinecone_index_name" {
+  type        = string
+  description = "Pinecone index name when VECTOR_STORE=pinecone."
+  default     = "movie-finder-rag"
+}
+
+variable "pinecone_index_host" {
+  type        = string
+  description = "Optional Pinecone index host."
+  default     = ""
+}
+
+variable "pinecone_cloud" {
+  type        = string
+  description = "Pinecone serverless cloud."
+  default     = "aws"
+}
+
+variable "pinecone_region" {
+  type        = string
+  description = "Pinecone serverless region."
+  default     = "us-east-1"
+}
+
+variable "pgvector_schema" {
+  type        = string
+  description = "PostgreSQL schema token for pgvector targets."
+  default     = "public"
 }
